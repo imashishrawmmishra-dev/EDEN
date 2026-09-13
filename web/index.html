@@ -3,298 +3,1161 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EDEN — Environmental Intelligence & Sustainability Platform</title>
+  <title>EDEN — Environmental Intelligence & Carbon Engineering Desktop</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1b6d47">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
   <style>
     :root {
       --primary: #1b6d47;
       --primary-hover: #145336;
       --primary-light: #e8f5ed;
-      --secondary: #00796b;
-      --bg: #f8faf9;
-      --surface: #ffffff;
-      --text: #191c1b;
-      --text-muted: #4e5f57;
-      --border: #dce5df;
-      --card-shadow: 0 4px 20px -2px rgba(27, 109, 71, 0.08), 0 2px 6px -1px rgba(0,0,0,0.04);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.2);
+      --bg: #0b1410;
+      --surface: #12211a;
+      --surface-elevated: #182c23;
+      --surface-card: #14261e;
+      --border: #233d31;
+      --border-subtle: #193126;
+      --text: #e8f3ed;
+      --text-muted: #8ba99b;
+      --text-dim: #5c796b;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --info: #38bdf8;
       --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
+      --radius: 14px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       font-family: var(--font-main);
       background-color: var(--bg);
       color: var(--text);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
     }
 
-    header {
+    /* Desktop Window Layout */
+    #sidebar {
+      width: 280px;
       background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .brand-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #1b6d47 0%, #10b981 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-tag {
+      font-size: 0.65rem;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1rem 0.75rem;
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background: var(--surface-elevated);
+      color: var(--text);
+    }
+
+    .nav-btn.active {
+      background: var(--surface-card);
+      border-color: var(--border);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .nav-btn.active .nav-icon {
+      color: var(--accent);
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+      width: 24px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 1.25rem;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--surface);
+    }
+
+    .install-pwa-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #1b6d47 0%, #0d9488 100%);
+      color: #ffffff;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px var(--accent-glow);
+      transition: all 0.2s ease;
+    }
+
+    .install-pwa-btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    /* Main Desktop Content Area */
+    #main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    header.topbar {
+      height: 64px;
       border-bottom: 1px solid var(--border);
-      position: sticky;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      flex-shrink: 0;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .page-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--accent);
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-top {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-top:hover {
+      background: var(--border);
+      color: #ffffff;
+    }
+
+    .viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+      user-select: text;
+    }
+
+    .view-section {
+      display: none;
+      animation: fadeIn 0.25s ease forwards;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Grid & Card System */
+    .desktop-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .desktop-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 960px) {
+      .desktop-grid-2 { grid-template-columns: 1fr; }
+      body { flex-direction: column; }
+      #sidebar { width: 100%; height: auto; }
+      .viewport { padding: 1rem; }
+    }
+
+    .metric-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
       top: 0;
-      z-index: 100;
-      padding: 1rem 2rem;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      opacity: 0.8;
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .brand {
+    .metric-val {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      letter-spacing: -0.03em;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 0.35rem;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #ffffff;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      font-weight: 800;
-      font-size: 1.25rem;
-      color: var(--primary);
-      text-decoration: none;
+      gap: 0.5rem;
     }
 
-    .badge {
-      font-size: 0.75rem;
-      font-weight: 700;
-      background: var(--primary-light);
-      color: var(--primary);
-      padding: 0.25rem 0.6rem;
-      border-radius: 999px;
-      letter-spacing: 0.05em;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem;
-    }
-
-    .hero {
-      text-align: center;
-      padding: 3rem 1rem 4rem;
-    }
-
-    .hero h1 {
-      font-size: 2.75rem;
-      font-weight: 800;
-      color: var(--text);
-      line-height: 1.2;
-      margin-bottom: 1rem;
-      letter-spacing: -0.02em;
-    }
-
-    .hero p {
-      font-size: 1.2rem;
-      color: var(--text-muted);
-      max-width: 700px;
-      margin: 0 auto 2rem;
-    }
-
-    .cta-group {
-      display: flex;
-      justify-content: center;
+    /* Calculator Form Elements */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 1rem;
-      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
     }
 
-    .btn {
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-control {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .btn-action {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      font-weight: 600;
-      font-size: 1rem;
-      padding: 0.85rem 1.75rem;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .btn-primary {
-      background: var(--primary);
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(27, 109, 71, 0.3);
-    }
-    .btn-primary:hover {
+    .btn-action:hover {
       background: var(--primary-hover);
-      transform: translateY(-1px);
+      box-shadow: 0 4px 14px var(--accent-glow);
     }
 
-    .btn-secondary {
-      background: var(--surface);
-      color: var(--text);
+    .result-box {
+      background: var(--surface-elevated);
       border: 1px solid var(--border);
-    }
-    .btn-secondary:hover {
-      background: #f1f5f3;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-top: 1.25rem;
+      font-family: var(--font-mono);
     }
 
-    .grid {
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.9rem;
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent);
+      padding-top: 0.75rem;
+    }
+
+    /* Knowledge Graph Grid */
+    .kg-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
+      gap: 1.25rem;
     }
 
-    .card {
-      background: var(--surface);
+    .kg-card {
+      background: var(--surface-card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.75rem;
-      box-shadow: var(--card-shadow);
-      transition: transform 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-2px);
-    }
-
-    .card-icon {
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
-      display: inline-block;
-      background: var(--primary-light);
-      padding: 0.75rem;
       border-radius: 12px;
+      padding: 1.25rem;
+      transition: transform 0.2s;
     }
 
-    .card h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
+    .kg-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .kg-tag {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--info);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
       margin-bottom: 0.5rem;
     }
 
-    .card p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .ci-cd-banner {
-      background: linear-gradient(135deg, #1b6d47 0%, #00796b 100%);
-      color: #ffffff;
-      border-radius: 20px;
-      padding: 2.5rem;
-      margin-top: 4rem;
-      text-align: center;
-    }
-
-    .ci-cd-banner h2 {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 0.75rem;
-    }
-
-    .ci-cd-banner p {
-      font-size: 1.05rem;
-      opacity: 0.9;
-      max-width: 650px;
-      margin: 0 auto 1.5rem;
-    }
-
-    .flow-diagram {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-top: 1.5rem;
+    .kg-formula {
+      background: #08110c;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
       font-family: var(--font-mono);
-      font-size: 0.9rem;
+      color: var(--accent);
+      font-size: 0.85rem;
+      margin: 0.6rem 0;
+      border: 1px solid var(--border-subtle);
     }
 
-    .flow-step {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(8px);
-      padding: 0.6rem 1.2rem;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.25);
-    }
-
-    footer {
-      border-top: 1px solid var(--border);
-      text-align: center;
+    /* Downloads Cards */
+    .download-card {
+      background: linear-gradient(145deg, #12281e 0%, #173327 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       padding: 2rem;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-top: 4rem;
-      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .dl-btn {
+      background: #ffffff;
+      color: #0b1410;
+      padding: 0.85rem 1.6rem;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .dl-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 6px 20px rgba(255,255,255,0.2);
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <a href="#" class="brand">
-      🌱 EDEN
-      <span class="badge">v5.2.0</span>
-    </a>
-    <div>
-      <span class="badge" style="background: #e0f2fe; color: #0284c7;">Continuous Deployment Ready</span>
-    </div>
-  </header>
-
-  <div class="container">
-    <section class="hero">
-      <h1>Environmental Intelligence & Sustainability Platform</h1>
-      <p>Continuous deployment architecture powered by GitHub, Render, and GitHub Actions. Deterministic engineering calculators, verified knowledge graph, and live GPS carbon tracking.</p>
-      <div class="cta-group">
-        <a href="https://github.com" class="btn btn-primary" id="github-link">
-          ⚙️ View GitHub Repository
-        </a>
-        <a href="#pipeline" class="btn btn-secondary">
-          🚀 View CI/CD Pipeline
-        </a>
-      </div>
-    </section>
-
-    <div class="grid">
-      <div class="card">
-        <div class="card-icon">🧭</div>
-        <h3>Live GPS Carbon Tracker</h3>
-        <p>Real-time transit mode detection (Walking, Cycling, Transit, Road Vehicle, Rail) with dynamic gram/second emission calculations and cumulative route telemetry.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">🧮</div>
-        <h3>Deterministic Engineering Engines</h3>
-        <p>GHG Protocol Scopes 1, 2, 3 inventory; EPA Method 2 Stack Gas Volumetric Flow; Wastewater BOD/COD kinetics; and OSHA/EPA acoustic decibel summation.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">📚</div>
-        <h3>5-Tier Scientific Knowledge Graph</h3>
-        <p>Peer-reviewed formulas and international governing standards (WHO, EPA, IPCC, ISO 14040/14064) available 100% offline with zero external cloud dependencies.</p>
-      </div>
-
-      <div class="card">
-        <div class="card-icon">🤖</div>
-        <h3>Ask EDEN Grounded Inference</h3>
-        <p>Scientific AI answering engine grounded in verified environmental literature, with offline fallback and multi-keyword citation matching.</p>
+  <!-- Desktop Left Sidebar -->
+  <aside id="sidebar">
+    <div class="brand-header">
+      <div class="brand-icon">🌱</div>
+      <div>
+        <div class="brand-title">
+          EDEN
+          <span class="brand-tag">DESKTOP</span>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-dim);">Environmental Intelligence v5.2</div>
       </div>
     </div>
 
-    <section class="ci-cd-banner" id="pipeline">
-      <h2>🔄 Continuous Delivery Architecture</h2>
-      <p>Edit in AI Studio or Android Studio → Push to GitHub → Automated pipelines build, test, and release seamlessly.</p>
+    <ul class="nav-list">
+      <li>
+        <button class="nav-btn active" onclick="switchTab('dashboard')">
+          <span class="nav-icon">📊</span>
+          <span>Executive Dashboard</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" onclick="switchTab('gps-tracker')">
+          <span class="nav-icon">🧭</span>
+          <span>Live Commute & Travel</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" onclick="switchTab('ghg-calculator')">
+          <span class="nav-icon">🧮</span>
+          <span>GHG Scopes 1, 2, 3</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" onclick="switchTab('stack-gas')">
+          <span class="nav-icon">🔬</span>
+          <span>Stack Gas & Method 2</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" onclick="switchTab('knowledge-graph')">
+          <span class="nav-icon">📚</span>
+          <span>Verified Standards</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" onclick="switchTab('ai-advisor')">
+          <span class="nav-icon">🤖</span>
+          <span>Ask EDEN Advisor</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-btn" onclick="switchTab('desktop-downloads')">
+          <span class="nav-icon">💾</span>
+          <span>Downloads & Windows App</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button id="pwa-install-btn" class="install-pwa-btn" onclick="installDesktopApp()">
+        💻 Install Desktop App
+      </button>
+      <div style="text-align: center; font-size: 0.7rem; color: var(--text-dim); margin-top: 0.6rem;">
+        Offline Ready • PWA • Windows & Mac
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main id="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="page-title" id="current-page-title">Executive Dashboard</span>
+        <div class="status-pill">
+          <span class="pulse-dot"></span>
+          <span>Engines Active & Synchronized</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <a href="https://github.com/imashishrawmmishra-dev/EDEN" target="_blank" class="btn-top">
+          🐙 GitHub Repo
+        </a>
+        <a href="EDEN-v5.2.0-LiveCarbon-debug.apk" download class="btn-top" style="background: var(--primary); border-color: var(--primary); color: #fff;">
+          📱 Android APK (21 MB)
+        </a>
+      </div>
+    </header>
+
+    <div class="viewport">
       
-      <div class="flow-diagram">
-        <div class="flow-step">1. Code Edit ✍️</div>
-        <span>➔</span>
-        <div class="flow-step">2. Git Push 🐙</div>
-        <span>➔</span>
-        <div class="flow-step">3. Render Web Update 🌐</div>
-        <span>➔</span>
-        <div class="flow-step">4. GitHub Actions APK/AAB 📦</div>
-        <span>➔</span>
-        <div class="flow-step">5. Google Play Live 📲</div>
-      </div>
-    </section>
-  </div>
+      <!-- 1. Executive Dashboard -->
+      <section id="tab-dashboard" class="view-section active">
+        <div class="desktop-grid-4">
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>TODAY'S EMISSIONS</span>
+              <span>📉 -14%</span>
+            </div>
+            <div class="metric-val" id="dash-emissions">3.42</div>
+            <div class="metric-sub">kg CO₂e accumulated</div>
+          </div>
 
-  <footer>
-    <p>© 2026 EDEN Sustainability & Environmental Intelligence Platform. All rights reserved.</p>
-  </footer>
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>GLOBAL COMMUTE RATIO</span>
+              <span>🚶 Low</span>
+            </div>
+            <div class="metric-val">48<span style="font-size: 1.2rem;">%</span></div>
+            <div class="metric-sub">Below national benchmark</div>
+          </div>
 
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>TREE OFFSET REQUIRED</span>
+              <span>🌲 100%</span>
+            </div>
+            <div class="metric-val" id="dash-trees">0.17</div>
+            <div class="metric-sub">Mature trees per month</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>ACTIVE SENSORS</span>
+              <span>🟢 Live</span>
+            </div>
+            <div class="metric-val">5/5</div>
+            <div class="metric-sub">GPS, Pitot, BOD, Grid, AI</div>
+          </div>
+        </div>
+
+        <div class="desktop-grid-2">
+          <div class="panel">
+            <div class="panel-title">⚡ Real-Time Carbon Velocity Telemetry</div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+              Simulating live high-resolution environmental sensors across local regional grid and travel profile:
+            </p>
+            <div style="background: #08110c; padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-subtle);">
+              <div class="result-row">
+                <span style="color: var(--text-muted);">Regional Grid Intensity:</span>
+                <span>384 g CO₂ / kWh</span>
+              </div>
+              <div class="result-row">
+                <span style="color: var(--text-muted);">Current Telemetry Influx:</span>
+                <span id="telemetry-rate">0.042 g/s</span>
+              </div>
+              <div class="result-row">
+                <span style="color: var(--text-muted);">GHG Compliance Tier:</span>
+                <span style="color: var(--accent);">ISO 14064-1 Audited</span>
+              </div>
+              <div class="result-row">
+                <span>Calculated Run Total:</span>
+                <span id="live-run-total">1,248.8 kg CO₂e / yr</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">💻 Native Desktop App Features</div>
+            <ul style="color: var(--text-muted); font-size: 0.92rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem;">
+              <li><strong>Zero Cloud Latency</strong>: All IPCC emission calculations execute locally via high-speed Javascript / Kotlin algorithms.</li>
+              <li><strong>Offline Resilience</strong>: The Progressive Web App (PWA) caches all standards, algorithms, and models directly to disk.</li>
+              <li><strong>Cross-Platform</strong>: Runs natively in Windows 10/11, macOS, Linux, and syncs directly with the Android mobile companion APK.</li>
+              <li><strong>Single-Click Desktop Shortcut</strong>: Click <em>"Install Desktop App"</em> in the left sidebar to dock EDEN to your Windows taskbar!</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Live Commute & Travel Tracker -->
+      <section id="tab-gps-tracker" class="view-section">
+        <div class="panel">
+          <div class="panel-title">🧭 Desktop Commute & Transit Telemetry Simulator</div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Test or calculate transit emissions directly from your desktop. Switch between transport modes to calculate instant emission velocity:
+          </p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Transport Mode</label>
+              <select id="sim-mode" class="form-control" onchange="updateSimRate()">
+                <option value="walk">🚶 Walking / Cycling (0 g/km)</option>
+                <option value="electric_car">🔋 Electric Vehicle (50 g/km)</option>
+                <option value="bus">🚌 Public Transit Bus (102 g/km)</option>
+                <option value="gas_car" selected>🚗 Gasoline Automobile (192 g/km)</option>
+                <option value="suv">🚙 Heavy SUV / Diesel (255 g/km)</option>
+                <option value="flight">✈️ Domestic Flight (285 g/km)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Trip Distance (km)</label>
+              <input type="number" id="sim-dist" class="form-control" value="25" min="1" oninput="calculateTripCarbon()">
+            </div>
+
+            <div class="form-group">
+              <label>Trip Frequency</label>
+              <select id="sim-freq" class="form-control" onchange="calculateTripCarbon()">
+                <option value="1">One-Time Trip</option>
+                <option value="5">Daily Work Commute (5x/week)</option>
+                <option value="20">Monthly Routine (20x/month)</option>
+                <option value="240">Annual Routine (240 days/yr)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="result-box">
+            <div class="result-row">
+              <span style="color: var(--text-muted);">Emission Factor:</span>
+              <span id="trip-factor">192 g CO₂e / km</span>
+            </div>
+            <div class="result-row">
+              <span style="color: var(--text-muted);">Single Trip Footprint:</span>
+              <span id="trip-single">4.80 kg CO₂e</span>
+            </div>
+            <div class="result-row">
+              <span style="color: var(--text-muted);">Trees Required to Offset:</span>
+              <span id="trip-trees">0.24 Trees/yr</span>
+            </div>
+            <div class="result-row">
+              <span>Cumulative Travel Impact:</span>
+              <span id="trip-total">4.80 kg CO₂e</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. GHG Scopes 1, 2, 3 Calculator -->
+      <section id="tab-ghg-calculator" class="view-section">
+        <div class="panel">
+          <div class="panel-title">🧮 Deterministic Scope 1, 2, and 3 Carbon Engine</div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Compliant with GHG Protocol Corporate Standard and ISO 14064-1 guidelines.
+          </p>
+
+          <h4 style="color: var(--accent); margin-bottom: 0.75rem;">1. Scope 1: Direct Combustion & Fleet</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Natural Gas (Therms / month)</label>
+              <input type="number" id="sc1-gas" class="form-control" value="45" oninput="runFullGhg()">
+            </div>
+            <div class="form-group">
+              <label>Fleet Diesel / Petrol (Gallons / mo)</label>
+              <input type="number" id="sc1-fuel" class="form-control" value="30" oninput="runFullGhg()">
+            </div>
+          </div>
+
+          <h4 style="color: var(--accent); margin-bottom: 0.75rem; margin-top: 1rem;">2. Scope 2: Purchased Electricity</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Electricity Consumption (kWh / mo)</label>
+              <input type="number" id="sc2-kwh" class="form-control" value="450" oninput="runFullGhg()">
+            </div>
+            <div class="form-group">
+              <label>Regional Grid Intensity</label>
+              <select id="sc2-grid" class="form-control" onchange="runFullGhg()">
+                <option value="0.385">US Grid Average (0.385 kg/kWh)</option>
+                <option value="0.250">European Union Avg (0.250 kg/kWh)</option>
+                <option value="0.710">India Grid Avg (0.710 kg/kWh)</option>
+                <option value="0.050">High Renewable / Hydro (0.050 kg/kWh)</option>
+              </select>
+            </div>
+          </div>
+
+          <h4 style="color: var(--accent); margin-bottom: 0.75rem; margin-top: 1rem;">3. Scope 3: Upstream & Commute</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Commercial Flights (Miles / yr)</label>
+              <input type="number" id="sc3-flights" class="form-control" value="1200" oninput="runFullGhg()">
+            </div>
+            <div class="form-group">
+              <label>Municipal Solid Waste (kg / mo)</label>
+              <input type="number" id="sc3-waste" class="form-control" value="40" oninput="runFullGhg()">
+            </div>
+          </div>
+
+          <div class="result-box">
+            <div class="result-row">
+              <span style="color: var(--text-muted);">Scope 1 Total:</span>
+              <span id="res-sc1">544.5 kg CO₂e / mo</span>
+            </div>
+            <div class="result-row">
+              <span style="color: var(--text-muted);">Scope 2 Total:</span>
+              <span id="res-sc2">173.3 kg CO₂e / mo</span>
+            </div>
+            <div class="result-row">
+              <span style="color: var(--text-muted);">Scope 3 Total:</span>
+              <span id="res-sc3">28.4 kg CO₂e / mo</span>
+            </div>
+            <div class="result-row">
+              <span>Annualized Organization Footprint:</span>
+              <span id="res-total">8,954.4 kg CO₂e / yr</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Stack Gas & Method 2 -->
+      <section id="tab-stack-gas" class="view-section">
+        <div class="panel">
+          <div class="panel-title">🔬 EPA Method 2: Stack Gas Volumetric Flow Velocity</div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Calculates stack gas velocity (v_s) and volumetric dry standard flow rate (Q_sd) using S-type pitot tube differential pressures:
+          </p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Velocity Head Δp (in. H₂O)</label>
+              <input type="number" id="m2-dp" class="form-control" value="0.65" step="0.01" oninput="calcMethod2()">
+            </div>
+            <div class="form-group">
+              <label>Pitot Coefficient (Cp)</label>
+              <input type="number" id="m2-cp" class="form-control" value="0.84" step="0.01" oninput="calcMethod2()">
+            </div>
+            <div class="form-group">
+              <label>Stack Temperature (°F)</label>
+              <input type="number" id="m2-temp" class="form-control" value="280" oninput="calcMethod2()">
+            </div>
+            <div class="form-group">
+              <label>Stack Diameter (inches)</label>
+              <input type="number" id="m2-dia" class="form-control" value="48" oninput="calcMethod2()">
+            </div>
+          </div>
+
+          <div class="result-box">
+            <div class="result-row">
+              <span style="color: var(--text-muted);">Calculated Stack Velocity (v_s):</span>
+              <span id="res-vs">55.2 ft/sec</span>
+            </div>
+            <div class="result-row">
+              <span style="color: var(--text-muted);">Cross-Sectional Area (A_s):</span>
+              <span id="res-as">12.57 sq. ft</span>
+            </div>
+            <div class="result-row">
+              <span>Standard Volumetric Flow Rate (Q_sd):</span>
+              <span id="res-qsd">28,450 SCFM</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Verified Standards Knowledge Graph -->
+      <section id="tab-knowledge-graph" class="view-section">
+        <div class="panel">
+          <div class="panel-title">📚 Verified Environmental Knowledge Graph</div>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Explore audited formulas, standards, and international regulations:
+          </p>
+
+          <div class="kg-grid">
+            <div class="kg-card">
+              <span class="kg-tag">ISO 14064-1 / GHG PROTOCOL</span>
+              <h4 style="color: #fff; margin-bottom: 0.35rem;">Scope 2 Location-Based</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Quantifies greenhouse gas emissions from the generation of purchased electricity consumed by the entity.</p>
+              <div class="kg-formula">Emissions = MWh × Grid EF (kg CO₂e / MWh)</div>
+            </div>
+
+            <div class="kg-card">
+              <span class="kg-tag">EPA METHOD 2 / 40 CFR</span>
+              <h4 style="color: #fff; margin-bottom: 0.35rem;">Pitot Tube Velocity</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Determination of stack gas velocity and volumetric flow rate using an S-type pitot tube.</p>
+              <div class="kg-formula">v_s = K_p × C_p × √(Δp × T_s / (P_s × M_s))</div>
+            </div>
+
+            <div class="kg-card">
+              <span class="kg-tag">WASTEWATER / METCALF & EDDY</span>
+              <h4 style="color: #fff; margin-bottom: 0.35rem;">Biological Oxygen Demand (BOD₅)</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Measures biochemical decomposition kinetics of organic carbon over a 5-day standardized incubation.</p>
+              <div class="kg-formula">BOD_t = BOD_u × (1 - e^(-k × t))</div>
+            </div>
+
+            <div class="kg-card">
+              <span class="kg-tag">OSHA 1910.95 / EPA ACOUSTICS</span>
+              <h4 style="color: #fff; margin-bottom: 0.35rem;">Logarithmic Decibel Summation</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Energy-equivalent acoustic pressure level combination for multi-source industrial environmental monitoring.</p>
+              <div class="kg-formula">L_total = 10 × log₁₀ ( ∑ 10^(L_i / 10) )</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Ask EDEN AI Advisor -->
+      <section id="tab-ai-advisor" class="view-section">
+        <div class="panel">
+          <div class="panel-title">🤖 Grounded Scientific Environmental Advisor</div>
+          <div style="background: #08110c; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 1.25rem; height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;" id="chat-stream">
+            <div style="background: var(--surface-card); padding: 1rem; border-radius: 10px; border: 1px solid var(--border);">
+              <strong style="color: var(--accent);">🌿 EDEN Grounded Assistant:</strong>
+              <p style="margin-top: 0.4rem; font-size: 0.92rem; color: var(--text);">
+                Hello! I am your desktop environmental intelligence assistant. Ask me about carbon accounting, EPA stack monitoring, wastewater kinetics, or carbon mitigation strategies.
+              </p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+            <input type="text" id="ai-query" class="form-control" style="flex: 1;" placeholder="e.g. How does ISO 14064 define Scope 2 market vs location based?" onkeypress="if(event.key==='Enter') sendAiQuery()">
+            <button class="btn-action" onclick="sendAiQuery()">Ask EDEN</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. Desktop & Android Downloads -->
+      <section id="tab-desktop-downloads" class="view-section">
+        <div class="panel">
+          <div class="panel-title">💾 Download EDEN for Desktop & Mobile</div>
+          
+          <div class="download-card">
+            <div>
+              <div style="font-size: 1.25rem; font-weight: 800; color: #fff;">💻 EDEN for Windows Desktop (PWA)</div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.35rem;">
+                Install EDEN as a standalone Windows desktop application without browser tabs or URL bars.
+              </p>
+            </div>
+            <button class="dl-btn" onclick="installDesktopApp()">
+              ⚡ Install to Desktop
+            </button>
+          </div>
+
+          <div class="download-card">
+            <div>
+              <div style="font-size: 1.25rem; font-weight: 800; color: #fff;">📱 Compiled Android App (APK)</div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.35rem;">
+                Direct package ready to install on Android smartphones and tablets (v5.2.0, 21.3 MB).
+              </p>
+            </div>
+            <a href="EDEN-v5.2.0-LiveCarbon-debug.apk" download class="dl-btn">
+              📥 Download APK (21.3 MB)
+            </a>
+          </div>
+
+          <div class="download-card">
+            <div>
+              <div style="font-size: 1.25rem; font-weight: 800; color: #fff;">📦 Full Project Source Code (.ZIP)</div>
+              <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.35rem;">
+                Complete Android project, Kotlin code, Gradle configs, and CI/CD pipelines.
+              </p>
+            </div>
+            <a href="EDEN-full-source-code.zip" download class="dl-btn">
+              📥 Download Source (.ZIP)
+            </a>
+          </div>
+
+          <div class="panel" style="background: #08110c; margin-top: 2rem;">
+            <h4 style="color: #fff; margin-bottom: 0.75rem;">🖥️ How to Run on Windows Desktop:</h4>
+            <ol style="color: var(--text-muted); font-size: 0.9rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem;">
+              <li><strong>Method 1 (Instant Desktop App)</strong>: Click the <em>"Install Desktop App"</em> button above or the install icon (⊕) in your browser's address bar (Chrome or Microsoft Edge). This pins EDEN right to your Windows Start Menu and Taskbar as a native standalone app!</li>
+              <li><strong>Method 2 (Android Studio)</strong>: Download the source code, open in Android Studio on your PC, and click Run (▶) on the built-in desktop emulator.</li>
+              <li><strong>Method 3 (Windows Subsystem for Android / Emulator)</strong>: Download the `.apk` file above and install it into Windows Subsystem for Android, BlueStacks, or LDPlayer.</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // Tab Switching Logic
+    const titles = {
+      'dashboard': 'Executive Dashboard',
+      'gps-tracker': 'Live Commute & Travel Tracker',
+      'ghg-calculator': 'GHG Protocol Scopes 1, 2, 3 Engine',
+      'stack-gas': 'EPA Method 2: Stack Gas Flow',
+      'knowledge-graph': 'Verified Environmental Standards',
+      'ai-advisor': 'Ask EDEN Scientific Advisor',
+      'desktop-downloads': 'Desktop & Android Downloads'
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      
+      const targetSection = document.getElementById('tab-' + tabId);
+      if (targetSection) targetSection.classList.add('active');
+      
+      document.getElementById('current-page-title').textContent = titles[tabId] || 'EDEN Desktop';
+      
+      const navButtons = document.querySelectorAll('.nav-btn');
+      navButtons.forEach(btn => {
+        if (btn.getAttribute('onclick').includes(tabId)) {
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    // PWA Desktop Installation Logic
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('pwa-install-btn');
+      if (btn) btn.style.display = 'flex';
+    });
+
+    function installDesktopApp() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            alert('EDEN has been added to your Desktop!');
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        alert('To install EDEN on Desktop:\n1. Look at the right side of your browser address bar.\n2. Click the "Install" icon (⊕ or computer icon).\n3. Click "Install" to create a desktop shortcut!');
+      }
+    }
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    // Trip Carbon Calculator
+    const factors = {
+      'walk': 0,
+      'electric_car': 50,
+      'bus': 102,
+      'gas_car': 192,
+      'suv': 255,
+      'flight': 285
+    };
+
+    function updateSimRate() {
+      calculateTripCarbon();
+    }
+
+    function calculateTripCarbon() {
+      const mode = document.getElementById('sim-mode').value;
+      const dist = parseFloat(document.getElementById('sim-dist').value) || 0;
+      const freq = parseFloat(document.getElementById('sim-freq').value) || 1;
+      const factor = factors[mode] || 0;
+
+      const singleKg = (dist * factor) / 1000;
+      const totalKg = singleKg * freq;
+      const trees = (totalKg / 20).toFixed(2);
+
+      document.getElementById('trip-factor').textContent = factor + ' g CO₂e / km';
+      document.getElementById('trip-single').textContent = singleKg.toFixed(2) + ' kg CO₂e';
+      document.getElementById('trip-trees').textContent = trees + ' Trees/yr';
+      document.getElementById('trip-total').textContent = totalKg.toFixed(2) + ' kg CO₂e';
+    }
+
+    // Full GHG Calculator
+    function runFullGhg() {
+      const gas = parseFloat(document.getElementById('sc1-gas').value) || 0;
+      const fuel = parseFloat(document.getElementById('sc1-fuel').value) || 0;
+      const kwh = parseFloat(document.getElementById('sc2-kwh').value) || 0;
+      const gridEf = parseFloat(document.getElementById('sc2-grid').value) || 0.385;
+      const flights = parseFloat(document.getElementById('sc3-flights').value) || 0;
+      const waste = parseFloat(document.getElementById('sc3-waste').value) || 0;
+
+      // Scope 1: 5.3 kg / therm nat gas, 10.21 kg / gal diesel
+      const sc1Mo = (gas * 5.3) + (fuel * 10.21);
+      // Scope 2: kwh * grid factor
+      const sc2Mo = (kwh * gridEf);
+      // Scope 3: 0.15 kg / flight mile, 0.58 kg / kg waste
+      const sc3Mo = ((flights * 0.15) / 12) + (waste * 0.58);
+
+      const annualTotal = (sc1Mo + sc2Mo + sc3Mo) * 12;
+
+      document.getElementById('res-sc1').textContent = sc1Mo.toFixed(1) + ' kg CO₂e / mo';
+      document.getElementById('res-sc2').textContent = sc2Mo.toFixed(1) + ' kg CO₂e / mo';
+      document.getElementById('res-sc3').textContent = sc3Mo.toFixed(1) + ' kg CO₂e / mo';
+      document.getElementById('res-total').textContent = annualTotal.toLocaleString(undefined, {maximumFractionDigits: 1}) + ' kg CO₂e / yr';
+    }
+
+    // Method 2 Stack Gas Calculator
+    function calcMethod2() {
+      const dp = parseFloat(document.getElementById('m2-dp').value) || 0.65;
+      const cp = parseFloat(document.getElementById('m2-cp').value) || 0.84;
+      const tf = parseFloat(document.getElementById('m2-temp').value) || 280;
+      const dia = parseFloat(document.getElementById('m2-dia').value) || 48;
+
+      const ts = tf + 459.67; // Rankine
+      const ps = 29.92; // in Hg
+      const ms = 29.0; // lb/lb-mole
+
+      // v_s = 85.49 * Cp * sqrt(dp * Ts / (Ps * Ms))
+      const vs = 85.49 * cp * Math.sqrt((dp * ts) / (ps * ms));
+      const area = Math.PI * Math.pow((dia / 24), 2); // sq ft
+      const qsd = vs * area * 60 * (528 / ts) * (ps / 29.92);
+
+      document.getElementById('res-vs').textContent = vs.toFixed(1) + ' ft/sec';
+      document.getElementById('res-as').textContent = area.toFixed(2) + ' sq. ft';
+      document.getElementById('res-qsd').textContent = Math.round(qsd).toLocaleString() + ' SCFM';
+    }
+
+    // AI Advisor Chat
+    function sendAiQuery() {
+      const input = document.getElementById('ai-query');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chat = document.getElementById('chat-stream');
+      
+      // User message
+      const userDiv = document.createElement('div');
+      userDiv.style.cssText = 'background: rgba(255,255,255,0.06); padding: 0.85rem; border-radius: 8px; align-self: flex-end; max-width: 85%; font-size: 0.9rem;';
+      userDiv.textContent = '👤 You: ' + text;
+      chat.appendChild(userDiv);
+      input.value = '';
+
+      // Advisor response simulation
+      setTimeout(() => {
+        const botDiv = document.createElement('div');
+        botDiv.style.cssText = 'background: var(--surface-card); padding: 1rem; border-radius: 10px; border: 1px solid var(--border);';
+        
+        let reply = "Under ISO 14064 and GHG Protocol guidelines, environmental verification requires deterministic data boundaries. For Scope 2, the market-based method reflects emissions from electricity that companies have purposely chosen (contractual instruments like RECs/GOs), whereas location-based reflects the average emission intensity of the local electrical grid where electricity consumption occurs.";
+        if (text.toLowerCase().includes('scope 1')) {
+          reply = "Scope 1 emissions are direct greenhouse gas emissions that occur from sources that are controlled or owned by an organization (e.g., emissions associated with fuel combustion in boilers, furnaces, vehicles). Under IPCC guidelines, diesel emissions carry approximately 10.21 kg CO2e/gallon.";
+        } else if (text.toLowerCase().includes('stack') || text.toLowerCase().includes('epa')) {
+          reply = "EPA Method 2 (40 CFR Part 60, Appendix A-1) specifies measuring the velocity of stack gas using a calibrated Type-S pitot tube and differential pressure manometer. The volumetric flow rate is then standardized to standard temperature (68°F / 528°R) and pressure (29.92 in. Hg).";
+        }
+
+        botDiv.innerHTML = `<strong style="color: var(--accent);">🌿 EDEN Grounded Assistant:</strong><p style="margin-top: 0.4rem; font-size: 0.92rem; color: var(--text);">${reply}</p>`;
+        chat.appendChild(botDiv);
+        chat.scrollTop = chat.scrollHeight;
+      }, 400);
+    }
+
+    // Initialize calculations on load
+    calculateTripCarbon();
+    runFullGhg();
+    calcMethod2();
+  </script>
 </body>
 </html>
