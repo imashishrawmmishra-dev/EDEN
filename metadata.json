@@ -1,0 +1,6 @@
+{
+  "name": "EDEN",
+  "description": "Environmental Intelligence, Education & Sustainability Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

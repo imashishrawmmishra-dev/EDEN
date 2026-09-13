@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: eden-environmental-intelligence
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: ./web
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache

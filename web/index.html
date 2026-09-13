@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDEN — Environmental Intelligence & Sustainability Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1b6d47;
+      --primary-hover: #145336;
+      --primary-light: #e8f5ed;
+      --secondary: #00796b;
+      --bg: #f8faf9;
+      --surface: #ffffff;
+      --text: #191c1b;
+      --text-muted: #4e5f57;
+      --border: #dce5df;
+      --card-shadow: 0 4px 20px -2px rgba(27, 109, 71, 0.08), 0 2px 6px -1px rgba(0,0,0,0.04);
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 3rem 1rem 4rem;
+    }
+
+    .hero h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin: 0 auto 2rem;
+    }
+
+    .cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.85rem 1.75rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(27, 109, 71, 0.3);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: #f1f5f3;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      display: inline-block;
+      background: var(--primary-light);
+      padding: 0.75rem;
+      border-radius: 12px;
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .ci-cd-banner {
+      background: linear-gradient(135deg, #1b6d47 0%, #00796b 100%);
+      color: #ffffff;
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-top: 4rem;
+      text-align: center;
+    }
+
+    .ci-cd-banner h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+    }
+
+    .ci-cd-banner p {
+      font-size: 1.05rem;
+      opacity: 0.9;
+      max-width: 650px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .flow-diagram {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .flow-step {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4rem;
+      background: var(--surface);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="#" class="brand">
+      🌱 EDEN
+      <span class="badge">v5.2.0</span>
+    </a>
+    <div>
+      <span class="badge" style="background: #e0f2fe; color: #0284c7;">Continuous Deployment Ready</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <section class="hero">
+      <h1>Environmental Intelligence & Sustainability Platform</h1>
+      <p>Continuous deployment architecture powered by GitHub, Render, and GitHub Actions. Deterministic engineering calculators, verified knowledge graph, and live GPS carbon tracking.</p>
+      <div class="cta-group">
+        <a href="https://github.com" class="btn btn-primary" id="github-link">
+          ⚙️ View GitHub Repository
+        </a>
+        <a href="#pipeline" class="btn btn-secondary">
+          🚀 View CI/CD Pipeline
+        </a>
+      </div>
+    </section>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-icon">🧭</div>
+        <h3>Live GPS Carbon Tracker</h3>
+        <p>Real-time transit mode detection (Walking, Cycling, Transit, Road Vehicle, Rail) with dynamic gram/second emission calculations and cumulative route telemetry.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🧮</div>
+        <h3>Deterministic Engineering Engines</h3>
+        <p>GHG Protocol Scopes 1, 2, 3 inventory; EPA Method 2 Stack Gas Volumetric Flow; Wastewater BOD/COD kinetics; and OSHA/EPA acoustic decibel summation.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📚</div>
+        <h3>5-Tier Scientific Knowledge Graph</h3>
+        <p>Peer-reviewed formulas and international governing standards (WHO, EPA, IPCC, ISO 14040/14064) available 100% offline with zero external cloud dependencies.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3>Ask EDEN Grounded Inference</h3>
+        <p>Scientific AI answering engine grounded in verified environmental literature, with offline fallback and multi-keyword citation matching.</p>
+      </div>
+    </div>
+
+    <section class="ci-cd-banner" id="pipeline">
+      <h2>🔄 Continuous Delivery Architecture</h2>
+      <p>Edit in AI Studio or Android Studio → Push to GitHub → Automated pipelines build, test, and release seamlessly.</p>
+      
+      <div class="flow-diagram">
+        <div class="flow-step">1. Code Edit ✍️</div>
+        <span>➔</span>
+        <div class="flow-step">2. Git Push 🐙</div>
+        <span>➔</span>
+        <div class="flow-step">3. Render Web Update 🌐</div>
+        <span>➔</span>
+        <div class="flow-step">4. GitHub Actions APK/AAB 📦</div>
+        <span>➔</span>
+        <div class="flow-step">5. Google Play Live 📲</div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>© 2026 EDEN Sustainability & Environmental Intelligence Platform. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
