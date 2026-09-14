@@ -70,8 +70,10 @@ jobs:
   release-and-publish:
     name: 🚀 Publish Release
     needs: build-and-test
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: 📥 Check out repository
@@ -105,6 +107,8 @@ jobs:
       - name: 🏷️ Create GitHub Release & Attach APK
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v1.1.0
+          name: "EDEN v1.1.0 - Environmental Intelligence & Auto-Update Release"
           files: app/build/outputs/apk/debug/*.apk
           generate_release_notes: true
         env:
