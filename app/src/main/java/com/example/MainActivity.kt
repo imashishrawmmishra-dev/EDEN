@@ -26,6 +26,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Home
@@ -35,6 +37,8 @@ import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Source
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,6 +64,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ui.components.EdenAboutModal
+import com.example.ui.components.SignInModal
+import com.example.ui.components.AppUpdateDialog
 import com.example.ui.screens.AskEdenScreen
 import com.example.ui.screens.CalculatorsScreen
 import com.example.ui.screens.HomeScreen
@@ -90,6 +97,23 @@ class MainActivity : ComponentActivity() {
 fun EdenApp(viewModel: EdenViewModel = viewModel()) {
     val currentTab by viewModel.currentTab.collectAsState()
     val forceOffline by viewModel.forceOffline.collectAsState()
+    val userAuth by viewModel.userAuthProfile.collectAsState()
+    val showAboutDialog by viewModel.showAboutDialog.collectAsState()
+    val showSignInDialog by viewModel.showSignInDialog.collectAsState()
+    val showUpdateDialog by viewModel.showUpdateDialog.collectAsState()
+    val appUpdateInfo by viewModel.appUpdateInfo.collectAsState()
+
+    if (showAboutDialog) {
+        EdenAboutModal(onDismiss = { viewModel.setAboutDialog(false) })
+    }
+
+    if (showSignInDialog) {
+        SignInModal(viewModel = viewModel, onDismiss = { viewModel.setSignInDialog(false) })
+    }
+
+    if (showUpdateDialog) {
+        AppUpdateDialog(viewModel = viewModel, onDismiss = { viewModel.setUpdateDialog(false) })
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -98,7 +122,11 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { viewModel.setAboutDialog(true) }
+                            .padding(vertical = 4.dp, horizontal = 2.dp)
+                            .testTag("top_left_eden_brand")
                     ) {
                         // Eco Leaf Emblem
                         Surface(
@@ -130,21 +158,76 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier
-                                        .size(6.dp)
+                                        .size(7.dp)
                                         .clip(CircleShape)
                                         .background(if (forceOffline) Color(0xFFC25400) else Color(0xFF0F6E43))
                                 )
                             }
                             Text(
-                                text = "Environmental Intelligence",
+                                text = if (forceOffline) "Offline Engine • Tap for Info" else "Online Open AI • Tap for Info",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.primary
+                                color = if (forceOffline) Color(0xFFC25400) else MaterialTheme.colorScheme.primary
                             )
                         }
                     }
                 },
                 actions = {
+                    // Online / Offline Mode Toggle Button
+                    IconButton(
+                        onClick = { viewModel.toggleForceOffline(!forceOffline) },
+                        modifier = Modifier.testTag("toggle_online_offline_button")
+                    ) {
+                        Icon(
+                            imageVector = if (forceOffline) Icons.Default.CloudOff else Icons.Default.CloudDone,
+                            contentDescription = if (forceOffline) "Mode: Offline (Tap for Online)" else "Mode: Online (Tap for Offline)",
+                            tint = if (forceOffline) Color(0xFFC25400) else Color(0xFF0F6E43)
+                        )
+                    }
+
+                    // EcoPoints & Account Pill
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .clickable { viewModel.setSignInDialog(true) }
+                            .padding(horizontal = 4.dp)
+                            .testTag("top_bar_account_pill")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFC25400),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "${userAuth.rewardPoints} pts",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+
+                    if (appUpdateInfo.isUpdateAvailable) {
+                        IconButton(
+                            onClick = { viewModel.setUpdateDialog(true) },
+                            modifier = Modifier.testTag("top_bar_update_action_btn")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SystemUpdate,
+                                contentDescription = "New Version Available",
+                                tint = Color(0xFFE65100)
+                            )
+                        }
+                    }
+
                     val context = LocalContext.current
                     IconButton(
                         onClick = {
@@ -162,7 +245,6 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                         )
                     }
 
-                    // Quick shortcuts to Learn, Resources, and Profile in top bar
                     IconButton(
                         onClick = { viewModel.selectTab(EdenTab.LEARN) },
                         modifier = Modifier.testTag("top_action_learn")

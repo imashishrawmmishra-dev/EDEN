@@ -89,4 +89,76 @@ class ExampleRobolectricTest {
         assertTrue("Answer should reference Scope or GHG", answer.text.contains("Scope", ignoreCase = true) || answer.text.contains("GHG", ignoreCase = true))
         assertTrue("Should have citations or retrieved nodes", answer.citations.isNotEmpty() || answer.retrievedNodes.isNotEmpty())
     }
+
+    @Test
+    fun `test user auth profile and reward points`() {
+        val user = com.example.data.model.UserAuthProfile(
+            isLoggedIn = true,
+            authMethod = "PURPOSE_DESIGNATION",
+            displayName = "Ashish Mishra",
+            purpose = "Carbon Auditing",
+            designation = "Lead Engineer",
+            rewardPoints = 100
+        )
+        assertEquals(100, user.rewardPoints)
+        assertEquals("🌱 Green Sentinel", user.badgeTitle)
+
+        val updated = user.copy(rewardPoints = 250)
+        assertEquals("🌿 Net-Zero Champion", updated.badgeTitle)
+    }
+
+    @Test
+    fun `test device GHG profile calculation`() {
+        // 5 Watts * 6 hours = 30 Wh = 0.03 kWh / day
+        // Operational GHG = 0.03 * 0.385 = 0.01155 kg CO2e / day
+        val device = com.example.data.model.DeviceGhgProfile(
+            deviceType = "Smartphone",
+            make = "Google",
+            model = "Pixel",
+            powerWatts = 5.0,
+            dailyScreenHours = 6.0,
+            gridCarbonIntensityKgKwh = 0.385,
+            embodiedCarbonKg = 55.0
+        )
+        assertEquals(0.01155, device.dailyOperationalCarbonKg, 0.001)
+        assertEquals(1.925, device.operationalGramsPerHour, 0.01)
+        assertTrue(device.annualTotalKg > 0)
+    }
+
+    @Test
+    fun `test environmental sensors WHO AQI categorization`() {
+        val goodSensors = com.example.data.model.EnvironmentalSensorsState(pm25 = 10.0, pm10 = 25.0)
+        assertTrue(goodSensors.whoAqiStatus.contains("Good"))
+
+        val moderateSensors = com.example.data.model.EnvironmentalSensorsState(pm25 = 20.0)
+        assertTrue(moderateSensors.whoAqiStatus.contains("Moderate"))
+
+        val unhealthySensors = com.example.data.model.EnvironmentalSensorsState(pm25 = 45.0)
+        assertTrue(unhealthySensors.whoAqiStatus.contains("Unhealthy"))
+    }
+
+    @Test
+    fun `test app auto-update model and version comparison`() {
+        val updateInfo = com.example.data.model.AppUpdateInfo(
+            currentVersionCode = 1,
+            currentVersionName = "1.0.0",
+            latestVersionCode = 2,
+            latestVersionName = "1.1.0",
+            autoCheckEnabled = true,
+            autoDownloadOnWifi = true
+        )
+        assertTrue(updateInfo.latestVersionCode > updateInfo.currentVersionCode)
+        assertTrue(updateInfo.isUpdateAvailable)
+        assertEquals("1.1.0", updateInfo.latestVersionName)
+        assertTrue(updateInfo.releaseNotes.isNotEmpty())
+
+        val updated = updateInfo.copy(
+            currentVersionCode = 2,
+            currentVersionName = "1.1.0",
+            isUpdateAvailable = false,
+            status = com.example.data.model.UpdateState.UP_TO_DATE
+        )
+        assertFalse(updated.isUpdateAvailable)
+        assertEquals(com.example.data.model.UpdateState.UP_TO_DATE, updated.status)
+    }
 }

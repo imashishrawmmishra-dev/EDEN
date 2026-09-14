@@ -250,6 +250,84 @@ object EdenInitialData {
             authority = "US EPA",
             evidenceLevel = "Tier 1: Federal Regulatory Standard",
             keyFindings = "Outlines secondary treatment limits for publicly owned treatment works (POTWs): 30-day average BOD5 <= 30 mg/L (or 85% removal), TSS <= 30 mg/L, pH 6.0 - 9.0."
+        ),
+        ResourceEntity(
+            id = "res_drawdown_review",
+            title = "Project Drawdown: 100 Technical Solutions for Climate Stabilization",
+            authorOrOrganization = "Project Drawdown Research Consortium",
+            year = 2023,
+            topic = "Climate Intelligence",
+            subtopic = "Gigaton Emission Reduction Modeling",
+            resourceType = "Research Project",
+            url = "https://drawdown.org/solutions",
+            authority = "Project Drawdown",
+            evidenceLevel = "Tier 1: Multi-Disciplinary Consensus",
+            keyFindings = "Levelized cost analysis of 100 proven technologies (solar PV, regenerative agriculture, refrigerant management, onshore wind) capable of achieving global net-zero."
+        ),
+        ResourceEntity(
+            id = "res_unep_emissions_gap",
+            title = "UNEP Emissions Gap Report: Closing the 1.5°C Ambition Gap",
+            authorOrOrganization = "United Nations Environment Programme (UNEP)",
+            year = 2024,
+            topic = "Climate Intelligence",
+            subtopic = "Global Policy & Emissions Trajectories",
+            resourceType = "Magazine & Report",
+            url = "https://www.unep.org/resources/emissions-gap-report",
+            authority = "UNEP",
+            evidenceLevel = "Tier 1: Intergovernmental Assessment",
+            keyFindings = "Annual global greenhouse gas emissions reached 57.1 Gt CO2e; highlights essential 42% reduction by 2030 across G20 industrial nations to preserve Paris goals."
+        ),
+        ResourceEntity(
+            id = "res_circular_economy",
+            title = "Towards the Circular Economy: Accelerating Economic and Industrial Decoupling",
+            authorOrOrganization = "Ellen MacArthur Foundation & McKinsey & Company",
+            year = 2022,
+            topic = "Waste Intelligence",
+            subtopic = "Industrial Symbiosis & Material Loops",
+            resourceType = "Environmental Essay",
+            url = "https://www.ellenmacarthurfoundation.org/",
+            authority = "Ellen MacArthur Foundation",
+            evidenceLevel = "Tier 2: Peer-Reviewed Economic Whitepaper",
+            keyFindings = "Presents systemic framework replacing linear 'take-make-waste' with restorative loops, saving up to 700 billion USD annually in materials across consumer industries."
+        ),
+        ResourceEntity(
+            id = "res_epa_ap42",
+            title = "US EPA AP-42: Compilation of Air Pollutant Emission Factors (5th Edition)",
+            authorOrOrganization = "US Environmental Protection Agency Office of Air Quality",
+            year = 2023,
+            topic = "Air Quality Intelligence",
+            subtopic = "Industrial Source Emission Factors",
+            resourceType = "Technical Theory",
+            url = "https://www.epa.gov/air-emissions-factors-and-quantification/ap-42-compilation-air-emissions-factors",
+            authority = "US EPA",
+            evidenceLevel = "Tier 1: Regulatory Standard",
+            keyFindings = "Deterministic emission factor database (A to E quality ratings) covering stationary combustion, chemical manufacturing, mineral products, and petroleum refining."
+        ),
+        ResourceEntity(
+            id = "res_metcalf_eddy_study",
+            title = "Biological Wastewater Treatment Kinetics and Activated Sludge Modeling",
+            authorOrOrganization = "Metcalf & Eddy Environmental Engineering Research Group",
+            year = 2023,
+            topic = "Water Intelligence",
+            subtopic = "Aeration Tank Hydraulics & HRT",
+            resourceType = "Study Module",
+            url = "https://www.wef.org/",
+            authority = "Water Environment Federation",
+            evidenceLevel = "Tier 1: Engineering Text & Module",
+            keyFindings = "Comprehensive module on Monod kinetic parameters, mean cell residence time (MCRT / solids retention time), biological nutrient removal (BNR), and hydraulic retention time (HRT)."
+        ),
+        ResourceEntity(
+            id = "res_nature_carbon_paper",
+            title = "Nature Climate Change: Global Carbon Budget and Fossil Trajectories",
+            authorOrOrganization = "Global Carbon Project & University of Exeter",
+            year = 2024,
+            topic = "Carbon Intelligence",
+            subtopic = "Atmospheric Inversion & Carbon Sinks",
+            resourceType = "Research Paper",
+            url = "https://www.nature.com/nclimate/",
+            authority = "Nature Publishing Group",
+            evidenceLevel = "Tier 1: Peer-Reviewed Scientific Paper",
+            keyFindings = "Quantifies remaining global carbon budget (~250 Gt CO2 for 50% chance of limiting warming to 1.5°C); monitors land and ocean sink efficiency variations."
         )
     )
 

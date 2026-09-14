@@ -3,6 +3,7 @@ package com.example.ui.screens
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,27 +23,46 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Air
-import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Co2
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.DeviceThermostat
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,12 +71,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.viewmodel.EdenTab
 import com.example.viewmodel.EdenViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
@@ -64,9 +84,31 @@ fun HomeScreen(
     onNavigate: (EdenTab) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val orgName by viewModel.orgName.collectAsState()
-    val orgWebsite by viewModel.orgWebsite.collectAsState()
+    val userAuth by viewModel.userAuthProfile.collectAsState()
+    val deviceGhg by viewModel.deviceGhgProfile.collectAsState()
+    val sensors by viewModel.environmentalSensors.collectAsState()
+    val forceOffline by viewModel.forceOffline.collectAsState()
+    val appUpdateInfo by viewModel.appUpdateInfo.collectAsState()
     val context = LocalContext.current
+
+    // Live real-time grams emitted counter ticker for active session
+    var liveSeconds by remember { mutableDoubleStateOf(0.0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000L)
+            liveSeconds += 1.0
+        }
+    }
+
+    // Dialog state for customizing device specs
+    var showDeviceDialog by remember { mutableStateOf(false) }
+    var editDeviceType by remember { mutableStateOf(deviceGhg.deviceType) }
+    var editMake by remember { mutableStateOf(deviceGhg.make) }
+    var editModel by remember { mutableStateOf(deviceGhg.model) }
+    var editWatts by remember { mutableStateOf(deviceGhg.powerWatts.toString()) }
+    var editHours by remember { mutableStateOf(deviceGhg.dailyScreenHours.toString()) }
+
+    var dailyChallengeCompleted by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier
@@ -74,518 +116,870 @@ fun HomeScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Hero Banner
-        item {
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("home_hero_banner"),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Box(
+        // Customer Auto-Update Banner
+        if (appUpdateInfo.isUpdateAvailable) {
+            item {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1)),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF0F6E43),
-                                    Color(0xFF0D5233)
-                                )
-                            )
-                        )
-                        .padding(20.dp)
-                ) {
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFF1E8449)
-                            ) {
-                                Text(
-                                    text = "ENVIRONMENTAL INTELLIGENCE",
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFF58D68D))
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Knowledge Engine Ready",
-                                    color = Color(0xFFD4EFDF),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "EDEN",
-                            color = Color.White,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp
-                        )
-
-                        Text(
-                            text = "Explore • Discover • Educate • Nurture",
-                            color = Color(0xFFA9DFBF),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Text(
-                            text = "A scientific platform connecting environmental knowledge, verified evidence, deterministic calculations, and grounded AI assistance.",
-                            color = Color(0xFFE8F8F5),
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        )
-                    }
-                }
-            }
-        }
-
-        // Organization Website Link Card
-        item {
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                    .testTag("render_platform_card")
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                        .border(1.dp, Color(0xFFFFB300), RoundedCornerShape(16.dp))
+                        .clickable { viewModel.setUpdateDialog(true) }
+                        .testTag("home_auto_update_banner")
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                                modifier = Modifier.size(42.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Business,
-                                    contentDescription = "Organization",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(10.dp)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Column {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = Color(0xFF0F6E43)
-                                    ) {
-                                        Text(
-                                            text = "LIVE PLATFORM • v5.2.0",
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = "Online Engine",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = orgName,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Explore • Discover • Educate • Nurture",
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = orgWebsite,
-                            fontSize = 11.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(orgWebsite))
-                                    context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, "Could not open website: ${e.message}", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .testTag("btn_launch_render_web"),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.OpenInBrowser,
-                                contentDescription = "Launch",
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Open Web App", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-
-                        Button(
-                            onClick = { onNavigate(EdenTab.ASK_EDEN) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .testTag("btn_goto_ask_engine"),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                        ) {
-                            Text(
-                                "Ask Engine",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Quick Navigation Matrix
-        item {
-            Text(
-                text = "Intelligence Modules",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
-        // Live Location Carbon Tracker Hero Banner Card
-        item {
-            Card(
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color(0xFF0F6E43).copy(alpha = 0.6f), RoundedCornerShape(14.dp))
-                    .clickable { onNavigate(EdenTab.LIVE_CARBON) }
-                    .testTag("quick_action_live_carbon_tracker")
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
                             shape = RoundedCornerShape(10.dp),
-                            color = Color(0xFFE8F8F5),
-                            modifier = Modifier.size(44.dp)
+                            color = Color(0xFFFF8F00),
+                            modifier = Modifier.size(40.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.GpsFixed,
-                                contentDescription = "Live Location Carbon Tracker",
-                                tint = Color(0xFF0F6E43),
-                                modifier = Modifier.padding(10.dp)
+                                imageVector = Icons.Default.SystemUpdate,
+                                contentDescription = "Auto Update Ready",
+                                tint = Color.White,
+                                modifier = Modifier.padding(8.dp)
                             )
                         }
 
                         Spacer(modifier = Modifier.width(12.dp))
 
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Auto-Update Ready: v${appUpdateInfo.latestVersionName}",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp,
+                                    color = Color(0xFFE65100)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Surface(
                                     shape = RoundedCornerShape(4.dp),
-                                    color = Color(0xFF0F6E43)
+                                    color = Color(0xFFFFE082)
                                 ) {
                                     Text(
-                                        text = "GPS SENSING",
+                                        text = "SYNC",
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        color = Color(0xFFBF360C),
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Live Telemetry",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF0F6E43)
-                                )
                             }
-                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Live Location Carbon Tracker",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "Track trip distance, live transit emissions & regional grid intensity",
+                                text = "Automated sync for all customer devices • Tap to update",
                                 fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = Color(0xFF5D4037)
                             )
                         }
-                    }
 
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Co2,
-                            contentDescription = "Carbon",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(6.dp)
-                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = { viewModel.setUpdateDialog(true) },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE65100)),
+                            modifier = Modifier.height(34.dp).testTag("home_banner_update_btn")
+                        ) {
+                            Text("Update", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
         }
 
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                QuickActionCard(
-                    title = "Ask EDEN",
-                    subtitle = "Grounded AI & KG",
-                    icon = Icons.Default.Psychology,
-                    badge = "Resilient",
-                    onClick = { onNavigate(EdenTab.ASK_EDEN) },
-                    modifier = Modifier.weight(1f)
-                )
-                QuickActionCard(
-                    title = "Calculators",
-                    subtitle = "Carbon, Air & Water",
-                    icon = Icons.Default.Calculate,
-                    badge = "Deterministic",
-                    onClick = { onNavigate(EdenTab.CALCULATORS) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                QuickActionCard(
-                    title = "Knowledge Graph",
-                    subtitle = "5-Level Depth",
-                    icon = Icons.AutoMirrored.Filled.MenuBook,
-                    badge = "Standards",
-                    onClick = { onNavigate(EdenTab.KNOWLEDGE) },
-                    modifier = Modifier.weight(1f)
-                )
-                QuickActionCard(
-                    title = "Sensors & Data",
-                    subtitle = "NAAQS & Limits",
-                    icon = Icons.Default.Sensors,
-                    badge = "Real Telemetry",
-                    onClick = { onNavigate(EdenTab.DATA) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // Scientific Quality Principles Card
+        // User Authentication & EcoPoints Header Card
         item {
             Card(
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                modifier = Modifier.fillMaxWidth()
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(20.dp))
+                    .testTag("home_user_profile_card"),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Scientific Verification",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Scientific Quality Mandate",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(44.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = userAuth.displayName.take(1).uppercase(),
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = if (userAuth.isLoggedIn) userAuth.displayName else "Guest User",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Surface(
+                                        shape = RoundedCornerShape(4.dp),
+                                        color = Color(0xFFE8F5E9)
+                                    ) {
+                                        Text(
+                                            text = if (userAuth.isLoggedIn) "ACTIVE" else "UNREGISTERED",
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF0F6E43),
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = userAuth.designation,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+
+                        // EcoPoints Badge & Action
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFFFF3E0),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { viewModel.setSignInDialog(true) }
+                                .padding(2.dp)
+                                .testTag("home_points_badge")
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = Color(0xFFE65100),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "${userAuth.rewardPoints} pts",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFE65100)
+                                )
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
-
                     Text(
-                        text = "• Rule 1: Never invent environmental data or regulatory figures.\n" +
-                                "• Rule 2: Never hallucinate scientific citations or test protocols.\n" +
-                                "• Rule 3: Deterministic engineering formulas for all quantitative calculations.\n" +
-                                "• Rule 4: Explicit declaration of assumptions, units, and boundaries.\n" +
-                                "• Rule 5: Transparent distinction between measured, calculated, and estimated data.",
-                        fontSize = 12.sp,
-                        lineHeight = 18.sp,
-                        fontFamily = FontFamily.Default,
+                        text = "Purpose: ${userAuth.purpose}",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        ) {
+                            Text(
+                                text = userAuth.badgeTitle,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+
+                        TextButton(
+                            onClick = { viewModel.setSignInDialog(true) },
+                            modifier = Modifier.testTag("manage_profile_or_signin_btn")
+                        ) {
+                            Text(
+                                text = if (userAuth.isLoggedIn) "Manage Account" else "Sign In (+100 Pts)",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Live Environmental Sensors & WHO AQI Card
+        item {
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                    .testTag("home_live_sensors_card")
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.DeviceThermostat,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Live Environmental Conditions",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFE8F5E9)
+                        ) {
+                            Text(
+                                text = sensors.whoAqiStatus,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0F6E43),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 4-Grid Sensor Tiles
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Indoor Temp
+                        SensorMiniCard(
+                            label = "Indoor Temp",
+                            value = "%.1f°C".format(sensors.indoorTempC),
+                            subValue = "%.1f°F".format(sensors.indoorTempF),
+                            icon = Icons.Default.DeviceThermostat,
+                            modifier = Modifier.weight(1f)
+                        )
+                        // Outdoor Temp
+                        SensorMiniCard(
+                            label = "Outdoor Temp",
+                            value = "%.1f°C".format(sensors.outdoorTempC),
+                            subValue = "%.1f°F".format(sensors.outdoorTempF),
+                            icon = Icons.Default.DeviceThermostat,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Indoor Humidity
+                        SensorMiniCard(
+                            label = "Indoor RH",
+                            value = "%.1f%%".format(sensors.indoorHumidityRh),
+                            subValue = "Optimum: 40-60%",
+                            icon = Icons.Default.WaterDrop,
+                            modifier = Modifier.weight(1f)
+                        )
+                        // Outdoor Humidity
+                        SensorMiniCard(
+                            label = "Outdoor RH",
+                            value = "%.1f%%".format(sensors.outdoorHumidityRh),
+                            subValue = "Ambient Station",
+                            icon = Icons.Default.Air,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // WHO AQI Pollutant Breakdown
+                    Text(
+                        text = "WHO 2021 Global Air Quality Parameters:",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        PollutantPill(name = "PM2.5", value = "%.1f".format(sensors.pm25), unit = "µg/m³", limit = "15")
+                        PollutantPill(name = "PM10", value = "%.1f".format(sensors.pm10), unit = "µg/m³", limit = "45")
+                        PollutantPill(name = "NO2", value = "%.1f".format(sensors.no2), unit = "µg/m³", limit = "25")
+                        PollutantPill(name = "SO2", value = "%.1f".format(sensors.so2), unit = "µg/m³", limit = "40")
+                        PollutantPill(name = "CO", value = "%.1f".format(sensors.co), unit = "mg/m³", limit = "4")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Advisory: " + sensors.whoAdvisory,
+                        fontSize = 11.sp,
+                        lineHeight = 15.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         }
 
-        // Architecture Workflow Summary
+        // Live Device GHG Emission Tracking Card
         item {
             Card(
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
+                    .border(1.dp, Color(0xFF0F6E43).copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                    .testTag("home_device_ghg_card")
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (deviceGhg.deviceType.contains("Phone", true)) Icons.Default.Smartphone else Icons.Default.Computer,
+                                contentDescription = null,
+                                tint = Color(0xFF0F6E43),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Live Device GHG Tracking",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { showDeviceDialog = true },
+                            modifier = Modifier.size(28.dp).testTag("edit_device_specs_btn")
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Specs", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Text(
-                        text = "EDEN Architectural Workflow",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
+                        text = "${deviceGhg.make} ${deviceGhg.model} (${deviceGhg.deviceType})",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "User Query ➔ Knowledge Retrieval ➔ Grounding Engine ➔ Resilient Inference ➔ Authoritative Citations ➔ Learning Pathway",
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = MaterialTheme.colorScheme.primary,
-                        lineHeight = 16.sp
+                        text = "Power Draw: ${deviceGhg.powerWatts}W • Active Use: ${deviceGhg.dailyScreenHours} hrs/day • Grid: ${deviceGhg.gridCarbonIntensityKgKwh} kg/kWh",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Live Ticker Metric Box
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFFE8F5E9),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "LIVE SESSION EMISSION",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF0F6E43)
+                                )
+                                val sessionGrams = liveSeconds * deviceGhg.gramsPerSecond
+                                Text(
+                                    text = "%.4f g CO₂e".format(sessionGrams),
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 18.sp,
+                                    color = Color(0xFF0F6E43)
+                                )
+                            }
+
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "RATE PER HOUR",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "%.2f g CO₂e/h".format(deviceGhg.operationalGramsPerHour),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Daily Operational: %.3f kg CO₂e".format(deviceGhg.dailyOperationalCarbonKg),
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Annual Total: %.1f kg CO₂e".format(deviceGhg.annualTotalKg),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
+        }
+
+        // App Information, User Manual & Verification Banner (Clickable to open EdenAboutModal)
+        item {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.setAboutDialog(true) }
+                    .testTag("home_about_eden_banner")
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "About EDEN & User Manual",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = "Tap to view full app documentation, content verification (IPCC/ISO/EPA/WHO), and mission.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Free Open Research Library & Study Modules Preview
+        item {
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                    .testTag("home_research_preview_card")
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Free Environmental Research",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
+                        TextButton(
+                            onClick = { onNavigate(EdenTab.RESOURCES) },
+                            modifier = Modifier.testTag("home_view_all_research_btn")
+                        ) {
+                            Text("View All", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Access peer-reviewed papers, open study modules, IPCC reports, and technical standards for free:",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    ResearchMiniRow(title = "IPCC AR6: Global Warming Potential (GWP100)", org = "IPCC / WMO / UNEP", tag = "Report")
+                    Spacer(modifier = Modifier.height(6.dp))
+                    ResearchMiniRow(title = "WHO Global Air Quality Guidelines 2021", org = "World Health Organization", tag = "Guidelines")
+                    Spacer(modifier = Modifier.height(6.dp))
+                    ResearchMiniRow(title = "Project Drawdown: 100 Technical Solutions", org = "Drawdown Consortium", tag = "Research")
+                    Spacer(modifier = Modifier.height(6.dp))
+                    ResearchMiniRow(title = "Metcalf & Eddy: Activated Sludge Kinetics", org = "Water Environment Fed.", tag = "Study Module")
+                }
+            }
+        }
+
+        // Quick Navigation Grid to Core Features
+        item {
+            Text(
+                text = "Core Environmental Tools",
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                ToolNavCard(
+                    title = "Calculators",
+                    subtitle = "Scope 1-3 & Stack Flow",
+                    icon = Icons.Default.Calculate,
+                    color = Color(0xFF0F6E43),
+                    onClick = { onNavigate(EdenTab.CALCULATORS) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_calc"
+                )
+                ToolNavCard(
+                    title = "Live GPS Carbon",
+                    subtitle = "Trip Commute Audit",
+                    icon = Icons.Default.GpsFixed,
+                    color = Color(0xFF1E88E5),
+                    onClick = { onNavigate(EdenTab.LIVE_CARBON) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_gps"
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                ToolNavCard(
+                    title = "Ask EDEN AI",
+                    subtitle = if (forceOffline) "Offline Engine" else "Open AI Active",
+                    icon = Icons.Default.Psychology,
+                    color = if (forceOffline) Color(0xFFC25400) else Color(0xFF8E24AA),
+                    onClick = { onNavigate(EdenTab.ASK_EDEN) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_ai"
+                )
+                ToolNavCard(
+                    title = "Knowledge Graph",
+                    subtitle = "5-Tier Concepts",
+                    icon = Icons.AutoMirrored.Filled.MenuBook,
+                    color = Color(0xFF00897B),
+                    onClick = { onNavigate(EdenTab.KNOWLEDGE) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_knowledge"
+                )
+            }
+        }
+
+        // Daily Sustainability Action Challenge
+        item {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF0F6E43), modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Daily Eco-Action Challenge",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = Color(0xFF0F6E43)
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFC8E6C9)
+                        ) {
+                            Text(
+                                text = "+15 Pts",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0F6E43),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Conduct a device energy audit today: lower screen brightness by 20% or power down non-essential background devices.",
+                        fontSize = 12.sp,
+                        color = Color(0xFF1B5E20)
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    if (!dailyChallengeCompleted) {
+                        Button(
+                            onClick = {
+                                dailyChallengeCompleted = true
+                                viewModel.awardEcoPoints(15)
+                                Toast.makeText(context, "+15 EcoPoints Awarded! Great job for the planet!", Toast.LENGTH_SHORT).show()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                                .testTag("complete_daily_action_btn"),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F6E43)),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("Complete Action & Claim 15 Pts", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    } else {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFC8E6C9),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "✓ Completed Today! +15 EcoPoints credited.",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0F6E43),
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Edit Device Specs Dialog
+    if (showDeviceDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeviceDialog = false },
+            title = { Text("Configure Device Specifications", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Select or enter device details to accurately compute live operational GHG emissions:", fontSize = 11.sp)
+
+                    OutlinedTextField(
+                        value = editDeviceType,
+                        onValueChange = { editDeviceType = it },
+                        label = { Text("Device Type (Smartphone / Laptop / Desktop)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = editMake,
+                        onValueChange = { editMake = it },
+                        label = { Text("Make / Brand (e.g. Samsung, Apple, Dell)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = editModel,
+                        onValueChange = { editModel = it },
+                        label = { Text("Model Name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = editWatts,
+                        onValueChange = { editWatts = it },
+                        label = { Text("Power Draw (Watts)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = editHours,
+                        onValueChange = { editHours = it },
+                        label = { Text("Daily Active Screen Hours") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val w = editWatts.toDoubleOrNull() ?: 5.0
+                        val h = editHours.toDoubleOrNull() ?: 6.0
+                        viewModel.updateDeviceProfile(editDeviceType, editMake, editModel, w, h)
+                        showDeviceDialog = false
+                    }
+                ) {
+                    Text("Save & Update")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeviceDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun SensorMiniCard(
+    label: String,
+    value: String,
+    subValue: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(text = label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = value, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = subValue, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Composable
-private fun QuickActionCard(
+private fun PollutantPill(name: String, value: String, unit: String, limit: String) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+        modifier = Modifier.padding(horizontal = 2.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
+        ) {
+            Text(text = name, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(text = value, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+            Text(text = "≤$limit", fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun ResearchMiniRow(title: String, org: String, tag: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = org, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Surface(
+            shape = RoundedCornerShape(4.dp),
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+        ) {
+            Text(
+                text = tag,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ToolNavCard(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    badge: String,
+    color: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    testTag: String = ""
 ) {
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = modifier
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
-            .clickable { onClick() }
-            .testTag("quick_action_${title.lowercase().replace(" ", "_")}")
+            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .testTag(testTag)
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = color.copy(alpha = 0.15f),
+                modifier = Modifier.size(36.dp)
             ) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(38.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = title,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                }
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Text(
-                        text = badge,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
                 }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = title,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = subtitle,
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column {
+                Text(text = title, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(text = subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }

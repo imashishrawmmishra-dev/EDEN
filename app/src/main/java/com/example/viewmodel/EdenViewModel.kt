@@ -11,14 +11,19 @@ import com.example.calculator.NoiseCalculatorEngine
 import com.example.calculator.WaterCalculatorEngine
 import com.example.data.model.CalculationEntity
 import com.example.data.model.CompetencyEntity
+import com.example.data.model.AppUpdateInfo
+import com.example.data.model.DeviceGhgProfile
 import com.example.data.model.EdenAnswer
+import com.example.data.model.EnvironmentalSensorsState
 import com.example.data.model.KnowledgeEntity
 import com.example.data.model.MonitoringEntity
 import com.example.data.model.ResourceEntity
+import com.example.data.model.UserAuthProfile
 import com.example.data.remote.EdenAiService
 import com.example.data.repository.EdenRepository
 import com.example.location.LiveLocationState
 import com.example.location.LocationTracker
+import com.example.update.AppUpdateManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -47,6 +52,54 @@ class EdenViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentTab = MutableStateFlow(EdenTab.HOME)
     val currentTab: StateFlow<EdenTab> = _currentTab.asStateFlow()
+
+    // --- User Authentication, Reward Points & Dialogs ---
+    private val _userAuthProfile = MutableStateFlow(
+        UserAuthProfile(
+            isLoggedIn = true,
+            authMethod = "PURPOSE_DESIGNATION",
+            displayName = "Ashish Mishra",
+            phoneNumber = "+1 555-0199",
+            countryCode = "+1",
+            email = "imashishrawmmishra@gmail.com",
+            purpose = "Environmental Science & Climate Action",
+            designation = "Lead Environmental Engineer",
+            rewardPoints = 100, // Initial welcome bonus on sign up
+            organization = "EDEN Environmental Research Group"
+        )
+    )
+    val userAuthProfile: StateFlow<UserAuthProfile> = _userAuthProfile.asStateFlow()
+
+    private val _showSignInDialog = MutableStateFlow(false)
+    val showSignInDialog: StateFlow<Boolean> = _showSignInDialog.asStateFlow()
+
+    private val _showAboutDialog = MutableStateFlow(false)
+    val showAboutDialog: StateFlow<Boolean> = _showAboutDialog.asStateFlow()
+
+    // --- App Auto-Update System for Customer Devices ---
+    private val appUpdateManager = AppUpdateManager(application)
+    val appUpdateInfo: StateFlow<AppUpdateInfo> = appUpdateManager.updateInfo
+
+    private val _showUpdateDialog = MutableStateFlow(false)
+    val showUpdateDialog: StateFlow<Boolean> = _showUpdateDialog.asStateFlow()
+
+    // --- Live Device GHG Emission state ---
+    private val _deviceGhgProfile = MutableStateFlow(
+        DeviceGhgProfile(
+            deviceType = "Smartphone",
+            make = "Android Client",
+            model = "Pixel / Modern Smartphone",
+            powerWatts = 5.0,
+            dailyScreenHours = 6.0,
+            gridCarbonIntensityKgKwh = 0.385,
+            embodiedCarbonKg = 55.0
+        )
+    )
+    val deviceGhgProfile: StateFlow<DeviceGhgProfile> = _deviceGhgProfile.asStateFlow()
+
+    // --- Live Environmental Sensors State (Indoor/Outdoor & WHO 2021 AQI) ---
+    private val _environmentalSensors = MutableStateFlow(EnvironmentalSensorsState())
+    val environmentalSensors: StateFlow<EnvironmentalSensorsState> = _environmentalSensors.asStateFlow()
 
     // --- Live Location Carbon Tracker state ---
     private val _liveLocation = MutableStateFlow(LiveLocationState())
@@ -202,6 +255,108 @@ class EdenViewModel(application: Application) : AndroidViewModel(application) {
             }
             _orgWebsite.value = url
         }
+    }
+
+    // --- Authentication & Reward Points Methods ---
+    fun setSignInDialog(show: Boolean) {
+        _showSignInDialog.value = show
+    }
+
+    fun setAboutDialog(show: Boolean) {
+        _showAboutDialog.value = show
+    }
+
+    fun signInWithPhone(countryCode: String, number: String, name: String) {
+        val current = _userAuthProfile.value
+        _userAuthProfile.value = current.copy(
+            isLoggedIn = true,
+            authMethod = "PHONE",
+            countryCode = countryCode.ifBlank { "+1" },
+            phoneNumber = number,
+            displayName = name.ifBlank { "Eco Champion" },
+            rewardPoints = current.rewardPoints + 100 // +100 reward points bonus on sign-up
+        )
+        _showSignInDialog.value = false
+    }
+
+    fun signInWithGoogle(accountName: String, email: String) {
+        val current = _userAuthProfile.value
+        _userAuthProfile.value = current.copy(
+            isLoggedIn = true,
+            authMethod = "GOOGLE",
+            displayName = accountName.ifBlank { "Google Verified Scholar" },
+            email = email.ifBlank { "user@gmail.com" },
+            rewardPoints = current.rewardPoints + 100 // +100 reward points bonus on sign-up
+        )
+        _showSignInDialog.value = false
+    }
+
+    fun signInFreeAccess(purpose: String, designation: String, name: String) {
+        val current = _userAuthProfile.value
+        _userAuthProfile.value = current.copy(
+            isLoggedIn = true,
+            authMethod = "PURPOSE_DESIGNATION",
+            displayName = name.ifBlank { "Sustainability Researcher" },
+            purpose = purpose.ifBlank { "Environmental Research & Climate Action" },
+            designation = designation.ifBlank { "Environmental Specialist" },
+            rewardPoints = current.rewardPoints + 100 // +100 reward points bonus on sign-up
+        )
+        _showSignInDialog.value = false
+    }
+
+    fun signOut() {
+        _userAuthProfile.value = UserAuthProfile(
+            isLoggedIn = false,
+            authMethod = "GUEST",
+            displayName = "Guest Environmentalist",
+            rewardPoints = 0
+        )
+    }
+
+    fun awardEcoPoints(points: Int) {
+        val current = _userAuthProfile.value
+        _userAuthProfile.value = current.copy(rewardPoints = current.rewardPoints + points)
+    }
+
+    fun updateDeviceProfile(
+        deviceType: String,
+        make: String,
+        model: String,
+        powerWatts: Double,
+        dailyHours: Double
+    ) {
+        val embodied = when (deviceType.lowercase()) {
+            "laptop" -> 220.0
+            "desktop pc", "workstation/server" -> 420.0
+            "tablet" -> 85.0
+            else -> 55.0
+        }
+        _deviceGhgProfile.value = DeviceGhgProfile(
+            deviceType = deviceType,
+            make = make,
+            model = model,
+            powerWatts = powerWatts.coerceAtLeast(0.5),
+            dailyScreenHours = dailyHours.coerceIn(0.5, 24.0),
+            embodiedCarbonKg = embodied
+        )
+    }
+
+    fun refreshEnvironmentalSensors(
+        inTemp: Double = 22.4,
+        outTemp: Double = 28.6,
+        inHum: Double = 47.5,
+        outHum: Double = 58.0,
+        pm25: Double = 11.4,
+        pm10: Double = 28.2
+    ) {
+        _environmentalSensors.value = _environmentalSensors.value.copy(
+            indoorTempC = inTemp,
+            outdoorTempC = outTemp,
+            indoorHumidityRh = inHum,
+            outdoorHumidityRh = outHum,
+            pm25 = pm25,
+            pm10 = pm10
+        )
     }
 
     // --- Calculator Actions ---
@@ -405,5 +560,36 @@ class EdenViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.deleteCalculation(id)
         }
+    }
+
+    // --- Auto-Update Management Actions ---
+    fun setUpdateDialog(show: Boolean) {
+        _showUpdateDialog.value = show
+    }
+
+    fun checkForAppUpdates(manual: Boolean = false) {
+        appUpdateManager.checkForUpdates(manual)
+    }
+
+    fun startDownloadAndInstall(context: android.content.Context, openStore: Boolean = false) {
+        appUpdateManager.startDownloadAndInstall(context, openStore)
+    }
+
+    fun setAutoCheckUpdates(enabled: Boolean) {
+        appUpdateManager.setAutoCheck(enabled)
+    }
+
+    fun setAutoDownloadWifi(enabled: Boolean) {
+        appUpdateManager.setAutoDownloadWifi(enabled)
+    }
+
+    fun dismissUpdate() {
+        appUpdateManager.dismissUpdate()
+        _showUpdateDialog.value = false
+    }
+
+    fun triggerTestUpdate() {
+        appUpdateManager.triggerTestUpdateAvailable()
+        _showUpdateDialog.value = true
     }
 }

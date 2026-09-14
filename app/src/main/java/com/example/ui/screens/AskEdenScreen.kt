@@ -99,13 +99,13 @@ fun AskEdenScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (forceOffline) "Offline Knowledge Graph Mode" else "Grounded Live AI Mode",
+                            text = if (forceOffline) "Offline Mode (Local Knowledge Graph)" else "Online Mode (Open-Source AI & Live Grounding)",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (forceOffline) Color(0xFFC25400) else Color(0xFF0F6E43)
                         )
                         Text(
-                            text = if (forceOffline) "Direct access to pre-verified local database" else "Augmented with live Gemini reasoning",
+                            text = if (forceOffline) "Deterministic local database with zero network queries" else "Connected to Open-Source AI engine with free public access",
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

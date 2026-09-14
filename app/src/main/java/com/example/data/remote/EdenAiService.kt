@@ -55,7 +55,13 @@ class EdenAiService(private val repository: EdenRepository) {
             return@withContext renderBackendAnswer
         }
 
-        // 2. Secondary: If Render backend unreachable, check Gemini API Key
+        // 2. Secondary: If Render backend unreachable, try Open-Source AI engine (Free public access)
+        val openSourceAnswer = queryOpenSourceAi(trimmedQuery, matchingNodes)
+        if (openSourceAnswer != null) {
+            return@withContext openSourceAnswer
+        }
+
+        // 3. Check Gemini API Key if user provided one in secrets
         val rawApiKey = try { BuildConfig.GEMINI_API_KEY } catch (_: Exception) { "" }
         val apiKey = rawApiKey.trim()
 
@@ -65,7 +71,7 @@ class EdenAiService(private val repository: EdenRepository) {
                 nodes = matchingNodes,
                 mode = AiResponseMode.OFFLINE_KNOWLEDGE_GRAPH,
                 errorCode = AiErrorCode.API_KEY_NOT_SET,
-                debugMsg = "Render backend offline and Gemini API key unconfigured. Retrieved deterministic knowledge from verified EDEN repository."
+                debugMsg = "Render and Open-Source AI endpoints unreachable. Retrieved deterministic knowledge from verified EDEN repository."
             )
         }
 
@@ -281,6 +287,53 @@ class EdenAiService(private val repository: EdenRepository) {
                 retrievedNodes = matchingNodes,
                 citations = citations,
                 suggestedActions = actions
+            )
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun queryOpenSourceAi(
+        query: String,
+        matchingNodes: List<KnowledgeEntity>
+    ): EdenAnswer? {
+        return try {
+            val groundedContext = buildGroundedPromptContext(matchingNodes)
+            val promptText = "You are EDEN Environmental Intelligence. Answer this environmental query with scientific rigor (WHO/EPA/IPCC):\nQuery: $query\nVerified Context:\n$groundedContext"
+            val encodedPrompt = java.net.URLEncoder.encode(promptText, "UTF-8")
+            val request = Request.Builder()
+                .url("https://text.pollinations.ai/$encodedPrompt?model=openai&seed=42")
+                .get()
+                .build()
+
+            val response = httpClient.newCall(request).execute()
+            if (!response.isSuccessful) return null
+            val answerText = response.body?.string()?.trim() ?: return null
+            if (answerText.length < 25) return null
+
+            val citations = matchingNodes.map {
+                Citation(
+                    source = it.authoritativeSource,
+                    authority = it.authority,
+                    year = it.sourceYear,
+                    evidenceTier = it.evidenceTier,
+                    keyEvidence = it.formulaOrStandard
+                )
+            }
+
+            EdenAnswer(
+                query = query,
+                text = answerText,
+                mode = if (matchingNodes.isNotEmpty()) AiResponseMode.LIVE_AI_GROUNDED else AiResponseMode.LIVE_AI,
+                errorCode = AiErrorCode.NONE,
+                debugDetails = "Served via Open-Source Environmental AI Engine (Public Free Access)",
+                retrievedNodes = matchingNodes,
+                citations = citations,
+                suggestedActions = listOf(
+                    "Inspect WHO & EPA Compliance Guidelines",
+                    "Compute Lifecycle GHG in Calculators",
+                    "Track Device & Transit Footprint"
+                )
             )
         } catch (_: Exception) {
             null

@@ -42,11 +42,18 @@ fun ResourcesScreen(
 ) {
     val resources by viewModel.resources.collectAsState()
     var selectedTopic by remember { mutableStateOf("All") }
+    var searchQuery by remember { mutableStateOf("") }
 
     val topics = listOf("All", "Water Intelligence", "Air Quality Intelligence", "Carbon Intelligence", "Climate Intelligence", "LCA Intelligence")
 
     val filteredResources = resources.filter { res ->
-        selectedTopic == "All" || res.topic.equals(selectedTopic, ignoreCase = true)
+        val matchesTopic = selectedTopic == "All" || res.topic.equals(selectedTopic, ignoreCase = true)
+        val matchesSearch = searchQuery.isBlank() ||
+                res.title.contains(searchQuery, ignoreCase = true) ||
+                res.authority.contains(searchQuery, ignoreCase = true) ||
+                res.keyFindings.contains(searchQuery, ignoreCase = true) ||
+                res.resourceType.contains(searchQuery, ignoreCase = true)
+        matchesTopic && matchesSearch
     }
 
     Column(
@@ -61,12 +68,25 @@ fun ResourcesScreen(
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = "Verified primary standards, regulatory documents, and peer-reviewed methods",
+            text = "Free research projects, peer-reviewed papers, articles, and study modules",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
+
+        androidx.compose.material3.OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Search papers, authors, WHO, IPCC, EPA, topics...") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("search_resources_input"),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
