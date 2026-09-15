@@ -26,11 +26,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Psychology
@@ -39,10 +40,13 @@ import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Source
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -51,9 +55,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,21 +70,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.ui.components.EdenAboutModal
-import com.example.ui.components.SignInModal
+import com.example.ui.components.AirQualityAlertDetailsModal
+import com.example.ui.components.AirQualityTopBarAlertIndicator
 import com.example.ui.components.AppUpdateDialog
+import com.example.ui.components.EdenAboutModal
+import com.example.ui.components.EdenSidebarDrawer
+import com.example.ui.components.EnvironmentalJobSearchModal
+import com.example.ui.components.SignInModal
 import com.example.ui.screens.AskEdenScreen
 import com.example.ui.screens.CalculatorsScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.KnowledgeGraphScreen
 import com.example.ui.screens.LearningScreen
 import com.example.ui.screens.LiveCarbonTrackerScreen
+import com.example.ui.screens.MonitoringProceduresScreen
 import com.example.ui.screens.MonitoringScreen
 import com.example.ui.screens.ProfileScreen
 import com.example.ui.screens.ResourcesScreen
 import com.example.ui.theme.EDENTheme
 import com.example.viewmodel.EdenTab
 import com.example.viewmodel.EdenViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,6 +114,12 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
     val showSignInDialog by viewModel.showSignInDialog.collectAsState()
     val showUpdateDialog by viewModel.showUpdateDialog.collectAsState()
     val appUpdateInfo by viewModel.appUpdateInfo.collectAsState()
+    val showAirQualityAlertDialog by viewModel.showAirQualityAlertDialog.collectAsState()
+    val selectedProcedureDomain by viewModel.selectedProcedureDomain.collectAsState()
+    val showJobSearchDialog by viewModel.showJobSearchDialog.collectAsState()
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
 
     if (showAboutDialog) {
         EdenAboutModal(onDismiss = { viewModel.setAboutDialog(false) })
@@ -115,11 +133,57 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
         AppUpdateDialog(viewModel = viewModel, onDismiss = { viewModel.setUpdateDialog(false) })
     }
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            TopAppBar(
-                title = {
+    if (showAirQualityAlertDialog) {
+        AirQualityAlertDetailsModal(
+            viewModel = viewModel,
+            onDismiss = { viewModel.setAirQualityAlertDialog(false) }
+        )
+    }
+
+    if (showJobSearchDialog) {
+        EnvironmentalJobSearchModal(
+            onDismiss = { viewModel.setJobSearchDialog(false) }
+        )
+    }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            EdenSidebarDrawer(
+                currentTab = currentTab,
+                selectedProcedureDomain = selectedProcedureDomain,
+                onSelectTab = { tab -> viewModel.selectTab(tab) },
+                onSelectProcedureDomain = { domain -> viewModel.selectProcedureDomain(domain) },
+                onCloseDrawer = {
+                    coroutineScope.launch { drawerState.close() }
+                },
+                onOpenJobSearch = {
+                    viewModel.setJobSearchDialog(true)
+                }
+            )
+        }
+    ) {
+        Scaffold(
+            contentWindowInsets = WindowInsets.safeDrawing,
+            topBar = {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                                }
+                            },
+                            modifier = Modifier.testTag("top_bar_menu_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Open Monitoring Procedures & Navigation Sidebar",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -173,6 +237,12 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                     }
                 },
                 actions = {
+                    // Real-time Air Quality Threshold Alert Status Indicator (Red & Pulsating on WHO breach)
+                    AirQualityTopBarAlertIndicator(
+                        viewModel = viewModel,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+
                     // Online / Offline Mode Toggle Button
                     IconButton(
                         onClick = { viewModel.toggleForceOffline(!forceOffline) },
@@ -183,6 +253,39 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                             contentDescription = if (forceOffline) "Mode: Offline (Tap for Online)" else "Mode: Online (Tap for Offline)",
                             tint = if (forceOffline) Color(0xFFC25400) else Color(0xFF0F6E43)
                         )
+                    }
+
+                    // ==============================================================
+                    // UPPER CORNER: SEARCH ENVIRONMENTAL JOBS DIRECT CONNECT SECTION
+                    // ==============================================================
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color(0xFF0F6E43),
+                        contentColor = Color.White,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .clickable { viewModel.setJobSearchDialog(true) }
+                            .padding(horizontal = 3.dp)
+                            .testTag("top_bar_search_jobs_button")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Work,
+                                contentDescription = "Search Environmental Jobs across All Portals",
+                                tint = Color.White,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "Search Jobs",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
 
                     // EcoPoints & Account Pill
@@ -374,7 +477,9 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                 EdenTab.LEARN -> LearningScreen(viewModel = viewModel)
                 EdenTab.RESOURCES -> ResourcesScreen(viewModel = viewModel)
                 EdenTab.PROFILE -> ProfileScreen(viewModel = viewModel)
+                EdenTab.MONITORING_PROCEDURES -> MonitoringProceduresScreen(viewModel = viewModel)
             }
         }
     }
+}
 }

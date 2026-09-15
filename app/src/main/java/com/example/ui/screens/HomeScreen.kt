@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.DeviceThermostat
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GpsFixed
@@ -74,6 +75,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.components.AirQualityMonitoringSection
+import com.example.ui.components.EnvironmentalDomainMonitoringSection
+import com.example.ui.components.EnvironmentalIntelligenceHub
 import com.example.viewmodel.EdenTab
 import com.example.viewmodel.EdenViewModel
 import kotlinx.coroutines.delay
@@ -448,6 +452,11 @@ fun HomeScreen(
             }
         }
 
+        // Multi-Domain Environmental Monitoring Suite (Air, Water, Noise, Soil) with Telemetry & Thresholds
+        item {
+            EnvironmentalDomainMonitoringSection(viewModel = viewModel)
+        }
+
         // Live Device GHG Emission Tracking Card
         item {
             Card(
@@ -710,6 +719,28 @@ fun HomeScreen(
                     testTag = "home_nav_ai"
                 )
                 ToolNavCard(
+                    title = "Pollution Suite",
+                    subtitle = "11 Domains • 8 Standards",
+                    icon = Icons.Default.Sensors,
+                    color = Color(0xFF00796B),
+                    onClick = { onNavigate(EdenTab.DATA) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_pollution_suite"
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                ToolNavCard(
+                    title = "Procedures & FDS",
+                    subtitle = "SOPs & Printable PDF",
+                    icon = Icons.Default.Description,
+                    color = Color(0xFF1565C0),
+                    onClick = { onNavigate(EdenTab.MONITORING_PROCEDURES) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_procedures"
+                )
+                ToolNavCard(
                     title = "Knowledge Graph",
                     subtitle = "5-Tier Concepts",
                     icon = Icons.AutoMirrored.Filled.MenuBook,
@@ -719,6 +750,36 @@ fun HomeScreen(
                     testTag = "home_nav_knowledge"
                 )
             }
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                ToolNavCard(
+                    title = "Study & Research",
+                    subtitle = "Open Standards & QMS",
+                    icon = Icons.AutoMirrored.Filled.MenuBook,
+                    color = Color(0xFF5E35B1),
+                    onClick = { onNavigate(EdenTab.RESOURCES) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_resources"
+                )
+                ToolNavCard(
+                    title = "Ask EDEN AI",
+                    subtitle = if (forceOffline) "Offline Engine" else "Open AI Active",
+                    icon = Icons.Default.Psychology,
+                    color = if (forceOffline) Color(0xFFC25400) else Color(0xFF8E24AA),
+                    onClick = { onNavigate(EdenTab.ASK_EDEN) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_ai_secondary"
+                )
+            }
+        }
+
+        // Section: Basic to Advanced Environmental Intelligence Hub
+        // Covers Air Quality, Water, Animals & Biodiversity, Physical Qualities,
+        // Soil Control, Noise Quality, Food Microbiology, Pollution Testing,
+        // Pollution Monitoring, and Pollution Remediation with Charts, QMS, Ongoing Research & Field Inputs.
+        item {
+            EnvironmentalIntelligenceHub(viewModel = viewModel)
         }
 
         // Daily Sustainability Action Challenge

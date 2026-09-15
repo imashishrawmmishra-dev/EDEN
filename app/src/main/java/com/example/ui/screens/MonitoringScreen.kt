@@ -23,11 +23,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -44,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -51,7 +54,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.MonitoringEntity
+import com.example.monitoring.util.FieldSheetReportPrinter
 import com.example.ui.components.MetricStatCard
+import com.example.ui.monitoring.PollutionMonitoringHubScreen
 import com.example.viewmodel.EdenViewModel
 
 @Composable
@@ -60,6 +65,8 @@ fun MonitoringScreen(
     modifier: Modifier = Modifier
 ) {
     val points by viewModel.monitoringPoints.collectAsState()
+
+    var monitoringViewMode by remember { mutableStateOf(0) } // 0 = 11-Domain Comprehensive Suite, 1 = Telemetry Log
 
     var showAddDialog by remember { mutableStateOf(false) }
     var paramName by remember { mutableStateOf("") }
@@ -72,12 +79,76 @@ fun MonitoringScreen(
     val exceedanceCount = points.count { it.isExceedance }
     val compliantCount = points.size - exceedanceCount
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
+    Column(modifier = modifier.fillMaxSize()) {
+        // Top View Mode Selector (Segmented Bar)
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 2.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (monitoringViewMode == 0) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    modifier = Modifier
+                        .weight(1.3f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { monitoringViewMode = 0 }
+                        .testTag("mode_tab_11_domains")
+                ) {
+                    Text(
+                        text = "11-Domain Standards & FDS",
+                        fontSize = 12.sp,
+                        fontWeight = if (monitoringViewMode == 0) FontWeight.Bold else FontWeight.Medium,
+                        color = if (monitoringViewMode == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (monitoringViewMode == 1) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { monitoringViewMode = 1 }
+                        .testTag("mode_tab_telemetry_log")
+                ) {
+                    Text(
+                        text = "Telemetry Points",
+                        fontSize = 12.sp,
+                        fontWeight = if (monitoringViewMode == 1) FontWeight.Bold else FontWeight.Medium,
+                        color = if (monitoringViewMode == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+            }
+        }
+
+        if (monitoringViewMode == 0) {
+            // Full 11-Domain Environmental Monitoring System
+            PollutionMonitoringHubScreen(
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            // Sensor Telemetry Points Quick-View & Custom Logger
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+
         // Summary KPI row
         item {
             Row(
@@ -238,6 +309,8 @@ fun MonitoringScreen(
             MonitoringPointCard(point = point)
         }
     }
+        }
+    }
 }
 
 @Composable
@@ -344,6 +417,33 @@ private fun MonitoringPointCard(point: MonitoringEntity) {
                 fontFamily = FontFamily.Monospace,
                 color = MaterialTheme.colorScheme.primary
             )
+
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val context = LocalContext.current
+            OutlinedButton(
+                onClick = {
+                    FieldSheetReportPrinter.printTelemetryPoint(context, point)
+                },
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("download_field_sheet_${point.parameter.lowercase().replace(" ", "_")}")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Print,
+                    contentDescription = "Download Field Sheet",
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Download Field Sheet",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

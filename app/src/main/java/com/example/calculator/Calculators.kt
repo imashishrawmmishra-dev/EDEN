@@ -1,6 +1,7 @@
 package com.example.calculator
 
 import kotlin.math.log10
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.PI
 
@@ -112,22 +113,28 @@ object AirCalculatorEngine {
         val flowRateM3Hour: Double,
         val emissionRateKgHour: Double,
         val emissionRateGSec: Double,
-        val formulaExplanation: String
+        val formulaExplanation: String,
+        val stackTempCelsius: Double = 165.0,
+        val normalizedFlowRateM3Hour: Double = 0.0
     )
 
     fun calculateStackFlow(
         velocityMPerSec: Double,
         diameterMeters: Double,
-        pollutantConcMgPerM3: Double
+        pollutantConcMgPerM3: Double,
+        tempCelsius: Double = 165.0
     ): StackFlowResult {
         val area = PI * (diameterMeters / 2.0).pow(2.0)
         val flowM3Sec = velocityMPerSec * area
         val flowM3Hr = flowM3Sec * 3600.0
+        // EPA Method 2 temperature normalization to standard NTP (20°C / 293.15 K):
+        val tempK = max(1.0, tempCelsius + 273.15)
+        val normFlowM3Hr = flowM3Hr * (293.15 / tempK)
         val emissionKgHr = flowM3Hr * pollutantConcMgPerM3 * 1e-6
         val emissionGSec = emissionKgHr * 1000.0 / 3600.0
 
-        val explanation = "Area A = π·(D/2)² = %.3f m². Flow Q = V·A = %.2f m³/s (%.1f m³/h). Emission Rate E = Q·C·10⁻⁶ = %.4f kg/h (%.4f g/s). Complies with EPA Method 2."
-            .format(area, flowM3Sec, flowM3Hr, emissionKgHr, emissionGSec)
+        val explanation = "Area A = π·(D/2)² = %.3f m². Actual Flow Q = V·A = %.2f m³/s (%.1f m³/h). Normalized Flow (EPA Method 2, 20°C NTP) Q_std = %.1f Nm³/h. Stack Temp Ts = %.1f°C. Emission Rate E = Q·C·10⁻⁶ = %.4f kg/h (%.4f g/s). Complies with EPA Method 2."
+            .format(area, flowM3Sec, flowM3Hr, normFlowM3Hr, tempCelsius, emissionKgHr, emissionGSec)
 
         return StackFlowResult(
             ductAreaM2 = area,
@@ -135,7 +142,9 @@ object AirCalculatorEngine {
             flowRateM3Hour = flowM3Hr,
             emissionRateKgHour = emissionKgHr,
             emissionRateGSec = emissionGSec,
-            formulaExplanation = explanation
+            formulaExplanation = explanation,
+            stackTempCelsius = tempCelsius,
+            normalizedFlowRateM3Hour = normFlowM3Hr
         )
     }
 
