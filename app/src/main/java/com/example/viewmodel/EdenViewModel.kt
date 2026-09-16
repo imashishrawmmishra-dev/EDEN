@@ -46,7 +46,10 @@ import com.example.location.LiveLocationState
 import com.example.location.LocationTracker
 import com.example.update.AppUpdateManager
 import com.example.monitoring.model.MonitoringProcedureDomain
+import com.example.data.model.SpecializedAiModelType
+import com.example.data.model.SpecializedAiRegistry
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -57,6 +60,7 @@ import kotlinx.coroutines.launch
 
 enum class EdenTab(val title: String) {
     HOME("Home"),
+    AI_MODELS("8 AI Models"),
     LIVE_CARBON("Live Carbon"),
     ASK_EDEN("Ask EDEN"),
     KNOWLEDGE("Knowledge"),
@@ -77,6 +81,84 @@ class EdenViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentTab = MutableStateFlow(EdenTab.HOME)
     val currentTab: StateFlow<EdenTab> = _currentTab.asStateFlow()
+
+    // --- 8 Specialized AI Models Architecture State ---
+    private val _selectedAiModelType = MutableStateFlow(SpecializedAiModelType.MOE)
+    val selectedAiModelType: StateFlow<SpecializedAiModelType> = _selectedAiModelType.asStateFlow()
+
+    private val _activeSimulationStepIndex = MutableStateFlow(0)
+    val activeSimulationStepIndex: StateFlow<Int> = _activeSimulationStepIndex.asStateFlow()
+
+    private val _isSimulatingPipeline = MutableStateFlow(false)
+    val isSimulatingPipeline: StateFlow<Boolean> = _isSimulatingPipeline.asStateFlow()
+
+    private val _selectedPresetIndex = MutableStateFlow(0)
+    val selectedPresetIndex: StateFlow<Int> = _selectedPresetIndex.asStateFlow()
+
+    private val _customPipelineInput = MutableStateFlow("")
+    val customPipelineInput: StateFlow<String> = _customPipelineInput.asStateFlow()
+
+    fun selectAiModelType(type: SpecializedAiModelType) {
+        _selectedAiModelType.value = type
+        _activeSimulationStepIndex.value = 0
+        _selectedPresetIndex.value = 0
+        _isSimulatingPipeline.value = false
+    }
+
+    fun selectPreset(index: Int) {
+        _selectedPresetIndex.value = index
+        _activeSimulationStepIndex.value = 0
+        _isSimulatingPipeline.value = false
+    }
+
+    fun setCustomPipelineInput(input: String) {
+        _customPipelineInput.value = input
+    }
+
+    fun setSimulationStep(step: Int) {
+        _activeSimulationStepIndex.value = step
+    }
+
+    fun nextSimulationStep() {
+        val currentModel = SpecializedAiRegistry.getModel(_selectedAiModelType.value)
+        val preset = currentModel.presets.getOrNull(_selectedPresetIndex.value) ?: currentModel.presets.firstOrNull()
+        val totalSteps = preset?.simulationSteps?.size ?: 5
+        if (_activeSimulationStepIndex.value < totalSteps) {
+            _activeSimulationStepIndex.value += 1
+        }
+    }
+
+    fun previousSimulationStep() {
+        if (_activeSimulationStepIndex.value > 0) {
+            _activeSimulationStepIndex.value -= 1
+        }
+    }
+
+    fun resetSimulation() {
+        _activeSimulationStepIndex.value = 0
+        _isSimulatingPipeline.value = false
+    }
+
+    fun autoPlaySimulation() {
+        viewModelScope.launch {
+            _isSimulatingPipeline.value = true
+            _activeSimulationStepIndex.value = 0
+            val currentModel = SpecializedAiRegistry.getModel(_selectedAiModelType.value)
+            val preset = currentModel.presets.getOrNull(_selectedPresetIndex.value) ?: currentModel.presets.firstOrNull()
+            val totalSteps = preset?.simulationSteps?.size ?: 5
+            for (step in 1..totalSteps) {
+                delay(1200)
+                _activeSimulationStepIndex.value = step
+            }
+            _isSimulatingPipeline.value = false
+        }
+    }
+
+    fun navigateToAiModelsStudio(type: SpecializedAiModelType = SpecializedAiModelType.MOE) {
+        _selectedAiModelType.value = type
+        _activeSimulationStepIndex.value = 0
+        selectTab(EdenTab.AI_MODELS)
+    }
 
     // --- Standardized Monitoring Procedures & FDS Section State ---
     private val _selectedProcedureDomain = MutableStateFlow(MonitoringProcedureDomain.AMBIENT)

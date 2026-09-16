@@ -424,6 +424,18 @@ fun EdenSidebarDrawer(
             )
 
             DrawerNavigationItem(
+                title = "8 Specialized AI Models",
+                subtitle = "LLM, LCM, LAM, MoE, VLM, SLM, MLM, SAM",
+                icon = Icons.Default.Psychology,
+                isSelected = currentTab == EdenTab.AI_MODELS,
+                testTag = "sidebar_nav_ai_models",
+                onClick = {
+                    onSelectTab(EdenTab.AI_MODELS)
+                    onCloseDrawer()
+                }
+            )
+
+            DrawerNavigationItem(
                 title = "Ask EDEN AI Advisor",
                 subtitle = "Regulatory & engineering assistant",
                 icon = Icons.Default.Psychology,

@@ -164,6 +164,15 @@ fun DesktopNavigationRail(
 
             RailNavItem(
                 icon = Icons.Default.Psychology,
+                label = "8 AI Models",
+                shortcutKey = "M",
+                isSelected = currentTab == EdenTab.AI_MODELS,
+                testTag = "rail_nav_ai_models",
+                onClick = { onSelectTab(EdenTab.AI_MODELS) }
+            )
+
+            RailNavItem(
+                icon = Icons.Default.Psychology,
                 label = "Ask EDEN",
                 shortcutKey = "2",
                 isSelected = currentTab == EdenTab.ASK_EDEN,

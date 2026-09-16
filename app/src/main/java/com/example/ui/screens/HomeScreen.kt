@@ -25,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Air
@@ -415,6 +416,131 @@ fun HomeScreen(
             }
         }
 
+        // 8 Specialized AI Models Feature Banner
+        item {
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF041922)),
+                border = BorderStroke(1.5.dp, Color(0xFF00E5FF).copy(alpha = 0.6f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .clickable { onNavigate(EdenTab.AI_MODELS) }
+                    .testTag("home_ai_models_studio_banner")
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFF00E5FF).copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, Color(0xFF00E5FF).copy(alpha = 0.6f))
+                        ) {
+                            Text(
+                                text = "SPECIALIZED AI ARCHITECTURE",
+                                fontSize = 9.5.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF00E5FF),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Explore Lab",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF00E5FF)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                tint = Color(0xFF00E5FF),
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFF00E5FF).copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, Color(0xFF00E5FF)),
+                            modifier = Modifier.size(38.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Psychology,
+                                    contentDescription = "8 AI Models",
+                                    tint = Color(0xFF00E5FF),
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column {
+                            Text(
+                                text = "8 Specialized AI Models",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "Flowcharts, Neural Nodes & Live Simulation Lab",
+                                fontSize = 11.sp,
+                                color = Color(0xFF80DEEA)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 8 Acronym Chips Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val modelChips = listOf(
+                            "LLM" to Color(0xFF00E5FF),
+                            "LCM" to Color(0xFF1DE9B6),
+                            "LAM" to Color(0xFFFFAB00),
+                            "MoE" to Color(0xFF7C4DFF),
+                            "VLM" to Color(0xFF00B0FF),
+                            "SLM" to Color(0xFF00E676),
+                            "MLM" to Color(0xFFFF5252),
+                            "SAM" to Color(0xFFE040FB)
+                        )
+                        modelChips.forEach { (tag, color) ->
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = color.copy(alpha = 0.15f),
+                                border = BorderStroke(0.8.dp, color.copy(alpha = 0.5f))
+                            ) {
+                                Text(
+                                    text = tag,
+                                    fontSize = 10.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                    fontWeight = FontWeight.Bold,
+                                    color = color,
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Live Environmental Sensors & WHO AQI Card
         item {
             Card(
@@ -780,6 +906,15 @@ fun HomeScreen(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                ToolNavCard(
+                    title = "8 AI Models",
+                    subtitle = "LLM • MoE • SAM • VLM",
+                    icon = Icons.Default.Psychology,
+                    color = Color(0xFF00B4D8),
+                    onClick = { onNavigate(EdenTab.AI_MODELS) },
+                    modifier = Modifier.width(185.dp),
+                    testTag = "home_nav_ai_models"
+                )
                 ToolNavCard(
                     title = "Calculators",
                     subtitle = "Scope 1-3 & Stack Flow",

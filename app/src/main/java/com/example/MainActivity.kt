@@ -105,6 +105,7 @@ import com.example.ui.components.EnvironmentalJobSearchModal
 import com.example.ui.components.SignInModal
 import com.example.ui.screens.AskEdenScreen
 import com.example.ui.screens.AuthOnboardingScreen
+import com.example.ui.screens.AiModelsStudioScreen
 import com.example.ui.screens.CalculatorsScreen
 import com.example.ui.screens.EsgSolutionsScreen
 import com.example.ui.screens.HomeScreen
@@ -239,6 +240,7 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                             Key.Six, Key.NumPad6 -> { viewModel.selectTab(EdenTab.MONITORING_PROCEDURES); true }
                             Key.Seven, Key.NumPad7 -> { viewModel.selectTab(EdenTab.ESG_SOLUTIONS); true }
                             Key.Eight, Key.NumPad8 -> { viewModel.selectTab(EdenTab.LEARN); true }
+                            Key.M -> { viewModel.selectTab(EdenTab.AI_MODELS); true }
                             Key.Escape -> {
                                 if (showDesktopPlatformDialog) viewModel.setDesktopPlatformDialog(false)
                                 else if (showJobSearchDialog) viewModel.setJobSearchDialog(false)
@@ -740,6 +742,7 @@ private fun EdenTabContent(currentTab: EdenTab, viewModel: EdenViewModel) {
     ) {
         when (currentTab) {
             EdenTab.HOME -> HomeScreen(viewModel = viewModel, onNavigate = { viewModel.selectTab(it) })
+            EdenTab.AI_MODELS -> AiModelsStudioScreen(viewModel = viewModel, onNavigate = { viewModel.selectTab(it) })
             EdenTab.LIVE_CARBON -> LiveCarbonTrackerScreen(viewModel = viewModel)
             EdenTab.ASK_EDEN -> AskEdenScreen(viewModel = viewModel, onNavigate = { viewModel.selectTab(it) })
             EdenTab.KNOWLEDGE -> KnowledgeGraphScreen(viewModel = viewModel)
