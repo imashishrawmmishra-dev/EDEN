@@ -2,7 +2,7 @@ package com.example.data.model
 
 data class UserAuthProfile(
     val isLoggedIn: Boolean = false,
-    val authMethod: String = "GUEST", // "PHONE", "GOOGLE", "PURPOSE_DESIGNATION", "GUEST"
+    val authMethod: String = "GUEST", // "PHONE", "GOOGLE", "PURPOSE_DESIGNATION", "SIGN_UP", "SIGN_IN", "GUEST"
     val displayName: String = "Guest Environmentalist",
     val phoneNumber: String = "",
     val countryCode: String = "+1",
@@ -10,7 +10,9 @@ data class UserAuthProfile(
     val purpose: String = "Environmental Intelligence & Action",
     val designation: String = "Sustainability Researcher",
     val rewardPoints: Int = 0,
-    val organization: String = "EDEN Community"
+    val organization: String = "EDEN Community",
+    val institutionType: String = "Office", // "College", "School", "Office", "NGO", "Ministry"
+    val institutionName: String = ""
 ) {
     val badgeTitle: String
         get() = when {

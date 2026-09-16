@@ -114,6 +114,26 @@ class ExampleRobolectricTest {
     }
 
     @Test
+    fun `test user sign up with institution affiliation and welcome reward points`() {
+        val user = com.example.data.model.UserAuthProfile(
+            isLoggedIn = true,
+            authMethod = "SIGN_UP",
+            displayName = "Dr. Ashish Mishra",
+            designation = "Lead Environmental Engineer",
+            institutionType = "Ministry",
+            institutionName = "Ministry of Environment, Forest & Climate Change",
+            rewardPoints = 250
+        )
+        assertTrue("User should be logged in after sign up and OTP", user.isLoggedIn)
+        assertEquals("Ministry", user.institutionType)
+        assertEquals("Ministry of Environment, Forest & Climate Change", user.institutionName)
+        assertEquals("Dr. Ashish Mishra", user.displayName)
+        assertEquals("Lead Environmental Engineer", user.designation)
+        assertEquals(250, user.rewardPoints)
+        assertEquals("🍃 Eco Pioneer", user.badgeTitle)
+    }
+
+    @Test
     fun `test device GHG profile calculation`() {
         // 5 Watts * 6 hours = 30 Wh = 0.03 kWh / day
         // Operational GHG = 0.03 * 0.385 = 0.01155 kg CO2e / day

@@ -24,10 +24,14 @@ import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Co2
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Hub
 import androidx.compose.material.icons.filled.MeetingRoom
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Sensors
@@ -62,6 +66,10 @@ fun EdenSidebarDrawer(
     onSelectProcedureDomain: (MonitoringProcedureDomain) -> Unit,
     onCloseDrawer: () -> Unit,
     onOpenJobSearch: () -> Unit = {},
+    onOpenDesktopHub: () -> Unit = {},
+    isBlackAndWhite: Boolean = false,
+    onToggleBlackAndWhite: () -> Unit = {},
+    onPlayWelcomeSound: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     ModalDrawerSheet(
@@ -164,6 +172,123 @@ fun EdenSidebarDrawer(
                 }
             }
 
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // ==========================================
+            // SCREEN DISPLAY MODE & AUDIO FEEDBACK SECTION
+            // ==========================================
+            SectionHeader(
+                title = "SCREEN DISPLAY MODE",
+                badge = if (isBlackAndWhite) "B&W ACTIVE" else "COLOR ACTIVE"
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Black & White Option
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable { if (!isBlackAndWhite) onToggleBlackAndWhite() }
+                        .testTag("drawer_mode_bnw"),
+                    shape = RoundedCornerShape(10.dp),
+                    color = if (isBlackAndWhite) Color(0xFF1E1E1E) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    border = if (isBlackAndWhite) androidx.compose.foundation.BorderStroke(1.5.dp, Color.White) else null
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Contrast,
+                            contentDescription = null,
+                            tint = if (isBlackAndWhite) Color.White else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Black & White",
+                            fontSize = 11.sp,
+                            fontWeight = if (isBlackAndWhite) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isBlackAndWhite) Color.White else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
+                // Full Color Option
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable { if (isBlackAndWhite) onToggleBlackAndWhite() }
+                        .testTag("drawer_mode_color"),
+                    shape = RoundedCornerShape(10.dp),
+                    color = if (!isBlackAndWhite) Color(0xFF0F6E43) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    border = if (!isBlackAndWhite) androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFF2E7D32)) else null
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Palette,
+                            contentDescription = null,
+                            tint = if (!isBlackAndWhite) Color.White else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Full Color",
+                            fontSize = 11.sp,
+                            fontWeight = if (!isBlackAndWhite) FontWeight.Bold else FontWeight.Medium,
+                            color = if (!isBlackAndWhite) Color.White else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            // Audio Welcome Chime Test Button
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onPlayWelcomeSound() }
+                    .testTag("drawer_play_welcome_sound_btn"),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MusicNote,
+                        contentDescription = "Welcome Sound",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Play Welcome Chime (Audio)",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
             // ==========================================
@@ -378,6 +503,18 @@ fun EdenSidebarDrawer(
                 testTag = "sidebar_nav_job_search",
                 onClick = {
                     onOpenJobSearch()
+                    onCloseDrawer()
+                }
+            )
+
+            DrawerNavigationItem(
+                title = "Multi-Platform & Desktop Hub",
+                subtitle = "Windows • Linux • macOS • DeX • Shortcuts",
+                icon = Icons.Default.Computer,
+                isSelected = false,
+                testTag = "sidebar_nav_desktop_hub",
+                onClick = {
+                    onOpenDesktopHub()
                     onCloseDrawer()
                 }
             )

@@ -1,6 +1,7 @@
 package com.example.viewmodel
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.BuildConfig
@@ -14,6 +15,7 @@ import com.example.calculator.GhgScenarioComparison
 import com.example.calculator.GhgUnitSystem
 import com.example.calculator.GhgUnitConverter
 import com.example.util.GhgCsvExporter
+import com.example.util.SoundManager
 import com.example.data.model.AirPollutantType
 import com.example.data.model.AirQualityHourlyPoint
 import com.example.data.model.AirQualityStation
@@ -94,21 +96,61 @@ class EdenViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // --- User Authentication, Reward Points & Dialogs ---
-    private val _userAuthProfile = MutableStateFlow(
-        UserAuthProfile(
-            isLoggedIn = true,
-            authMethod = "PURPOSE_DESIGNATION",
-            displayName = "Ashish Mishra",
-            phoneNumber = "+1 555-0199",
-            countryCode = "+1",
-            email = "imashishrawmmishra@gmail.com",
-            purpose = "Environmental Science & Climate Action",
-            designation = "Lead Environmental Engineer",
-            rewardPoints = 100, // Initial welcome bonus on sign up
-            organization = "EDEN Environmental Research Group"
-        )
-    )
+    private val authPrefs = application.getSharedPreferences("eden_user_session_prefs", Context.MODE_PRIVATE)
+
+    private fun loadInitialAuthProfile(): UserAuthProfile {
+        val isLoggedIn = authPrefs.getBoolean("is_logged_in", false)
+        return if (isLoggedIn) {
+            UserAuthProfile(
+                isLoggedIn = true,
+                authMethod = authPrefs.getString("auth_method", "SIGN_UP") ?: "SIGN_UP",
+                displayName = authPrefs.getString("display_name", "Ashish Mishra") ?: "Ashish Mishra",
+                phoneNumber = authPrefs.getString("phone_number", "+1 555-0199") ?: "+1 555-0199",
+                countryCode = "+1",
+                email = authPrefs.getString("email", "imashishrawmmishra@gmail.com") ?: "imashishrawmmishra@gmail.com",
+                purpose = authPrefs.getString("purpose", "Environmental Science & Climate Action") ?: "Environmental Science & Climate Action",
+                designation = authPrefs.getString("designation", "Lead Environmental Engineer") ?: "Lead Environmental Engineer",
+                rewardPoints = authPrefs.getInt("reward_points", 250),
+                organization = authPrefs.getString("organization", "EDEN Environmental Research Group") ?: "EDEN Environmental Research Group",
+                institutionType = authPrefs.getString("institution_type", "Ministry") ?: "Ministry",
+                institutionName = authPrefs.getString("institution_name", "Ministry of Environment") ?: "Ministry of Environment"
+            )
+        } else {
+            UserAuthProfile(
+                isLoggedIn = false,
+                authMethod = "GUEST",
+                displayName = "Guest Environmentalist",
+                rewardPoints = 0
+            )
+        }
+    }
+
+    private val _userAuthProfile = MutableStateFlow(loadInitialAuthProfile())
     val userAuthProfile: StateFlow<UserAuthProfile> = _userAuthProfile.asStateFlow()
+
+    private val _showWelcomeCelebration = MutableStateFlow(false)
+    val showWelcomeCelebration: StateFlow<Boolean> = _showWelcomeCelebration.asStateFlow()
+
+    fun dismissWelcomeCelebration() {
+        _showWelcomeCelebration.value = false
+    }
+
+    // --- Screen Display Mode: Black and White Monochrome vs Full Color ---
+    private val _isBlackAndWhiteMode = MutableStateFlow(authPrefs.getBoolean("black_and_white_mode", false))
+    val isBlackAndWhiteMode: StateFlow<Boolean> = _isBlackAndWhiteMode.asStateFlow()
+
+    fun setBlackAndWhiteMode(enabled: Boolean) {
+        _isBlackAndWhiteMode.value = enabled
+        authPrefs.edit().putBoolean("black_and_white_mode", enabled).apply()
+    }
+
+    fun toggleBlackAndWhiteMode() {
+        setBlackAndWhiteMode(!_isBlackAndWhiteMode.value)
+    }
+
+    fun playWelcomeSound() {
+        SoundManager.playWelcomeSound(getApplication<Application>().applicationContext)
+    }
 
     private val _showSignInDialog = MutableStateFlow(false)
     val showSignInDialog: StateFlow<Boolean> = _showSignInDialog.asStateFlow()
@@ -118,6 +160,9 @@ class EdenViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _showJobSearchDialog = MutableStateFlow(false)
     val showJobSearchDialog: StateFlow<Boolean> = _showJobSearchDialog.asStateFlow()
+
+    private val _showDesktopPlatformDialog = MutableStateFlow(false)
+    val showDesktopPlatformDialog: StateFlow<Boolean> = _showDesktopPlatformDialog.asStateFlow()
 
     // --- App Auto-Update System for Customer Devices ---
     private val appUpdateManager = AppUpdateManager(application)
@@ -474,56 +519,151 @@ class EdenViewModel(application: Application) : AndroidViewModel(application) {
         _showJobSearchDialog.value = show
     }
 
+    fun setDesktopPlatformDialog(show: Boolean) {
+        _showDesktopPlatformDialog.value = show
+    }
+
+    private fun persistAuthProfile(profile: UserAuthProfile) {
+        authPrefs.edit()
+            .putBoolean("is_logged_in", profile.isLoggedIn)
+            .putString("display_name", profile.displayName)
+            .putString("designation", profile.designation)
+            .putString("institution_type", profile.institutionType)
+            .putString("institution_name", profile.institutionName)
+            .putString("email", profile.email)
+            .putString("phone_number", profile.phoneNumber)
+            .putString("auth_method", profile.authMethod)
+            .putString("organization", profile.organization)
+            .putString("purpose", profile.purpose)
+            .putInt("reward_points", profile.rewardPoints)
+            .apply()
+    }
+
+    fun registerAndVerifyUser(
+        name: String,
+        designation: String,
+        institutionType: String,
+        institutionName: String,
+        contact: String
+    ) {
+        val isPhone = contact.contains(Regex("^\\+?[0-9\\-\\s]+$"))
+        val welcomeBonusPoints = 250 // Initial welcome bonus on sign-up & OTP verification
+        val newProfile = UserAuthProfile(
+            isLoggedIn = true,
+            authMethod = "SIGN_UP",
+            displayName = name.trim().ifBlank { "Environmental Pioneer" },
+            designation = designation.trim().ifBlank { "Sustainability Professional" },
+            institutionType = institutionType.ifBlank { "Office" },
+            institutionName = institutionName.trim().ifBlank { "EDEN Partner Network" },
+            organization = institutionName.trim().ifBlank { "EDEN Community" },
+            phoneNumber = if (isPhone) contact.trim() else "",
+            email = if (!isPhone) contact.trim() else "",
+            rewardPoints = welcomeBonusPoints,
+            purpose = "Planetary Health & Environmental Intelligence"
+        )
+        _userAuthProfile.value = newProfile
+        persistAuthProfile(newProfile)
+        _showSignInDialog.value = false
+        _showWelcomeCelebration.value = true
+        SoundManager.playWelcomeSound(getApplication<Application>().applicationContext)
+    }
+
+    fun signInExistingUser(
+        contact: String,
+        name: String = "",
+        designation: String = "",
+        institutionType: String = "",
+        institutionName: String = ""
+    ) {
+        val current = _userAuthProfile.value
+        val isPhone = contact.contains(Regex("^\\+?[0-9\\-\\s]+$"))
+        val points = if (current.rewardPoints > 0) current.rewardPoints else 250
+        val updated = current.copy(
+            isLoggedIn = true,
+            authMethod = "SIGN_IN",
+            displayName = name.trim().ifBlank {
+                if (current.displayName.isNotBlank() && current.displayName != "Guest Environmentalist") current.displayName else "Ashish Mishra"
+            },
+            designation = designation.trim().ifBlank { current.designation },
+            institutionType = institutionType.ifBlank { current.institutionType },
+            institutionName = institutionName.trim().ifBlank { current.institutionName },
+            phoneNumber = if (isPhone) contact.trim() else current.phoneNumber,
+            email = if (!isPhone) contact.trim() else current.email,
+            rewardPoints = points
+        )
+        _userAuthProfile.value = updated
+        persistAuthProfile(updated)
+        _showSignInDialog.value = false
+        _showWelcomeCelebration.value = true
+        SoundManager.playWelcomeSound(getApplication<Application>().applicationContext)
+    }
+
     fun signInWithPhone(countryCode: String, number: String, name: String) {
         val current = _userAuthProfile.value
-        _userAuthProfile.value = current.copy(
+        val updated = current.copy(
             isLoggedIn = true,
             authMethod = "PHONE",
             countryCode = countryCode.ifBlank { "+1" },
             phoneNumber = number,
             displayName = name.ifBlank { "Eco Champion" },
-            rewardPoints = current.rewardPoints + 100 // +100 reward points bonus on sign-up
+            rewardPoints = (current.rewardPoints + 100).coerceAtLeast(250)
         )
+        _userAuthProfile.value = updated
+        persistAuthProfile(updated)
         _showSignInDialog.value = false
+        _showWelcomeCelebration.value = true
+        SoundManager.playWelcomeSound(getApplication<Application>().applicationContext)
     }
 
     fun signInWithGoogle(accountName: String, email: String) {
         val current = _userAuthProfile.value
-        _userAuthProfile.value = current.copy(
+        val updated = current.copy(
             isLoggedIn = true,
             authMethod = "GOOGLE",
             displayName = accountName.ifBlank { "Google Verified Scholar" },
             email = email.ifBlank { "user@gmail.com" },
-            rewardPoints = current.rewardPoints + 100 // +100 reward points bonus on sign-up
+            rewardPoints = (current.rewardPoints + 100).coerceAtLeast(250)
         )
+        _userAuthProfile.value = updated
+        persistAuthProfile(updated)
         _showSignInDialog.value = false
+        _showWelcomeCelebration.value = true
+        SoundManager.playWelcomeSound(getApplication<Application>().applicationContext)
     }
 
     fun signInFreeAccess(purpose: String, designation: String, name: String) {
         val current = _userAuthProfile.value
-        _userAuthProfile.value = current.copy(
+        val updated = current.copy(
             isLoggedIn = true,
             authMethod = "PURPOSE_DESIGNATION",
             displayName = name.ifBlank { "Sustainability Researcher" },
             purpose = purpose.ifBlank { "Environmental Research & Climate Action" },
             designation = designation.ifBlank { "Environmental Specialist" },
-            rewardPoints = current.rewardPoints + 100 // +100 reward points bonus on sign-up
+            rewardPoints = (current.rewardPoints + 100).coerceAtLeast(250)
         )
+        _userAuthProfile.value = updated
+        persistAuthProfile(updated)
         _showSignInDialog.value = false
+        _showWelcomeCelebration.value = true
+        SoundManager.playWelcomeSound(getApplication<Application>().applicationContext)
     }
 
     fun signOut() {
+        authPrefs.edit().clear().apply()
         _userAuthProfile.value = UserAuthProfile(
             isLoggedIn = false,
             authMethod = "GUEST",
             displayName = "Guest Environmentalist",
             rewardPoints = 0
         )
+        _showWelcomeCelebration.value = false
     }
 
     fun awardEcoPoints(points: Int) {
         val current = _userAuthProfile.value
-        _userAuthProfile.value = current.copy(rewardPoints = current.rewardPoints + points)
+        val updated = current.copy(rewardPoints = current.rewardPoints + points)
+        _userAuthProfile.value = updated
+        persistAuthProfile(updated)
     }
 
     fun updateDeviceProfile(

@@ -4,9 +4,11 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -458,15 +461,20 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // 4-Grid Sensor Tiles
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // 4-Grid Sensor Tiles in a single horizontal line
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         // Indoor Temp
                         SensorMiniCard(
                             label = "Indoor Temp",
                             value = "%.1f°C".format(sensors.indoorTempC),
                             subValue = "%.1f°F".format(sensors.indoorTempF),
                             icon = Icons.Default.DeviceThermostat,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.width(135.dp)
                         )
                         // Outdoor Temp
                         SensorMiniCard(
@@ -474,20 +482,15 @@ fun HomeScreen(
                             value = "%.1f°C".format(sensors.outdoorTempC),
                             subValue = "%.1f°F".format(sensors.outdoorTempF),
                             icon = Icons.Default.DeviceThermostat,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.width(135.dp)
                         )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         // Indoor Humidity
                         SensorMiniCard(
                             label = "Indoor RH",
                             value = "%.1f%%".format(sensors.indoorHumidityRh),
                             subValue = "Optimum: 40-60%",
                             icon = Icons.Default.WaterDrop,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.width(135.dp)
                         )
                         // Outdoor Humidity
                         SensorMiniCard(
@@ -495,13 +498,13 @@ fun HomeScreen(
                             value = "%.1f%%".format(sensors.outdoorHumidityRh),
                             subValue = "Ambient Station",
                             icon = Icons.Default.Air,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.width(135.dp)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // WHO AQI Pollutant Breakdown
+                    // WHO AQI Pollutant Breakdown in a horizontal line
                     Text(
                         text = "WHO 2021 Global Air Quality Parameters:",
                         fontSize = 11.sp,
@@ -510,8 +513,10 @@ fun HomeScreen(
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         PollutantPill(name = "PM2.5", value = "%.1f".format(sensors.pm25), unit = "µg/m³", limit = "15")
                         PollutantPill(name = "PM10", value = "%.1f".format(sensors.pm10), unit = "µg/m³", limit = "45")
@@ -742,18 +747,23 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    ResearchMiniRow(title = "IPCC AR6: Global Warming Potential (GWP100)", org = "IPCC / WMO / UNEP", tag = "Report")
-                    Spacer(modifier = Modifier.height(6.dp))
-                    ResearchMiniRow(title = "WHO Global Air Quality Guidelines 2021", org = "World Health Organization", tag = "Guidelines")
-                    Spacer(modifier = Modifier.height(6.dp))
-                    ResearchMiniRow(title = "Project Drawdown: 100 Technical Solutions", org = "Drawdown Consortium", tag = "Research")
-                    Spacer(modifier = Modifier.height(6.dp))
-                    ResearchMiniRow(title = "Metcalf & Eddy: Activated Sludge Kinetics", org = "Water Environment Fed.", tag = "Study Module")
+                    // Research modules in a horizontal line
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        ResearchMiniCard(title = "IPCC AR6: Global Warming Potential (GWP100)", org = "IPCC / WMO / UNEP", tag = "Report")
+                        ResearchMiniCard(title = "WHO Global Air Quality Guidelines 2021", org = "World Health Organization", tag = "Guidelines")
+                        ResearchMiniCard(title = "Project Drawdown: 100 Technical Solutions", org = "Drawdown Consortium", tag = "Research")
+                        ResearchMiniCard(title = "Metcalf & Eddy: Activated Sludge Kinetics", org = "Water Environment Fed.", tag = "Study Module")
+                    }
                 }
             }
         }
 
-        // Quick Navigation Grid to Core Features
+        // Quick Navigation: Core Environmental Tools in a horizontal line
         item {
             Text(
                 text = "Core Environmental Tools",
@@ -764,14 +774,19 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 ToolNavCard(
                     title = "Calculators",
                     subtitle = "Scope 1-3 & Stack Flow",
                     icon = Icons.Default.Calculate,
                     color = Color(0xFF0F6E43),
                     onClick = { onNavigate(EdenTab.CALCULATORS) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(185.dp),
                     testTag = "home_nav_calc"
                 )
                 ToolNavCard(
@@ -780,21 +795,16 @@ fun HomeScreen(
                     icon = Icons.Default.GpsFixed,
                     color = Color(0xFF1E88E5),
                     onClick = { onNavigate(EdenTab.LIVE_CARBON) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(185.dp),
                     testTag = "home_nav_gps"
                 )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 ToolNavCard(
                     title = "Ask EDEN AI",
                     subtitle = if (forceOffline) "Offline Engine" else "Open AI Active",
                     icon = Icons.Default.Psychology,
                     color = if (forceOffline) Color(0xFFC25400) else Color(0xFF8E24AA),
                     onClick = { onNavigate(EdenTab.ASK_EDEN) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(185.dp),
                     testTag = "home_nav_ai"
                 )
                 ToolNavCard(
@@ -803,20 +813,16 @@ fun HomeScreen(
                     icon = Icons.Default.Sensors,
                     color = Color(0xFF00796B),
                     onClick = { onNavigate(EdenTab.DATA) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(185.dp),
                     testTag = "home_nav_pollution_suite"
                 )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 ToolNavCard(
                     title = "Procedures & FDS",
                     subtitle = "SOPs & Printable PDF",
                     icon = Icons.Default.Description,
                     color = Color(0xFF1565C0),
                     onClick = { onNavigate(EdenTab.MONITORING_PROCEDURES) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(185.dp),
                     testTag = "home_nav_procedures"
                 )
                 ToolNavCard(
@@ -825,20 +831,16 @@ fun HomeScreen(
                     icon = Icons.AutoMirrored.Filled.MenuBook,
                     color = Color(0xFF00897B),
                     onClick = { onNavigate(EdenTab.KNOWLEDGE) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(185.dp),
                     testTag = "home_nav_knowledge"
                 )
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 ToolNavCard(
                     title = "ESG & Solutions Hub",
                     subtitle = "20 Domains • OTP Toolkits",
                     icon = Icons.Default.Shield,
                     color = Color(0xFF1B5E20),
                     onClick = { onNavigate(EdenTab.ESG_SOLUTIONS) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(185.dp),
                     testTag = "home_nav_esg_solutions"
                 )
                 ToolNavCard(
@@ -847,7 +849,7 @@ fun HomeScreen(
                     icon = Icons.AutoMirrored.Filled.MenuBook,
                     color = Color(0xFF5E35B1),
                     onClick = { onNavigate(EdenTab.RESOURCES) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(185.dp),
                     testTag = "home_nav_resources"
                 )
             }
@@ -1044,41 +1046,61 @@ private fun SensorMiniCard(
 private fun PollutantPill(name: String, value: String, unit: String, limit: String) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-        modifier = Modifier.padding(horizontal = 2.dp)
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
         ) {
-            Text(text = name, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-            Text(text = value, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-            Text(text = "≤$limit", fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = name, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(text = "(≤$limit $unit)", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Composable
-private fun ResearchMiniRow(title: String, org: String, tag: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+private fun ResearchMiniCard(title: String, org: String, tag: String) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.width(220.dp)
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-            Text(text = org, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Surface(
-            shape = RoundedCornerShape(4.dp),
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-        ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                ) {
+                    Text(
+                        text = tag,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+                Text(
+                    text = org,
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = tag,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                text = title,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2
             )
         }
     }
