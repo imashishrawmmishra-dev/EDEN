@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Source
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SystemUpdate
@@ -79,6 +80,7 @@ import com.example.ui.components.EnvironmentalJobSearchModal
 import com.example.ui.components.SignInModal
 import com.example.ui.screens.AskEdenScreen
 import com.example.ui.screens.CalculatorsScreen
+import com.example.ui.screens.EsgSolutionsScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.KnowledgeGraphScreen
 import com.example.ui.screens.LearningScreen
@@ -349,6 +351,17 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                     }
 
                     IconButton(
+                        onClick = { viewModel.selectTab(EdenTab.ESG_SOLUTIONS) },
+                        modifier = Modifier.testTag("top_action_esg_solutions")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Shield,
+                            contentDescription = "ESG & Solutions",
+                            tint = if (currentTab == EdenTab.ESG_SOLUTIONS) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    IconButton(
                         onClick = { viewModel.selectTab(EdenTab.LEARN) },
                         modifier = Modifier.testTag("top_action_learn")
                     ) {
@@ -478,6 +491,7 @@ fun EdenApp(viewModel: EdenViewModel = viewModel()) {
                 EdenTab.RESOURCES -> ResourcesScreen(viewModel = viewModel)
                 EdenTab.PROFILE -> ProfileScreen(viewModel = viewModel)
                 EdenTab.MONITORING_PROCEDURES -> MonitoringProceduresScreen(viewModel = viewModel)
+                EdenTab.ESG_SOLUTIONS -> EsgSolutionsScreen(viewModel = viewModel, onNavigate = { viewModel.selectTab(it) })
             }
         }
     }

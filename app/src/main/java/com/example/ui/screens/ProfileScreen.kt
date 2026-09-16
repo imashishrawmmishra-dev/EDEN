@@ -473,6 +473,35 @@ fun ProfileScreen(
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Last Update and Check Timestamps
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Last Installed Update", fontSize = 10.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(appUpdateInfo.lastUpdateTime, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Last Cloud Sync Check", fontSize = 10.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(appUpdateInfo.getFormattedLastCheck(), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
 
                     // Switch: Auto-check for updates

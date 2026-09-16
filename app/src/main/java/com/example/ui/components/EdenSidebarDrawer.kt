@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.MeetingRoom
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.Work
@@ -146,11 +147,19 @@ fun EdenSidebarDrawer(
                             }
                         }
 
-                        Text(
-                            text = "v2.5 Enterprise",
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "v2.5 Enterprise",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Updated: Sep 15, 2026",
+                                fontSize = 8.5.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }
@@ -237,6 +246,30 @@ fun EdenSidebarDrawer(
                 onClick = {
                     onSelectProcedureDomain(MonitoringProcedureDomain.WATER)
                     onSelectTab(EdenTab.MONITORING_PROCEDURES)
+                    onCloseDrawer()
+                }
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // ==========================================
+            // ESG, EIA & PROFESSIONAL SOLUTIONS HUB
+            // ==========================================
+            SectionHeader(title = "SOLUTIONS & PROFESSIONAL HUB", badge = "20 DOMAINS • OTP DOWNLOADS")
+
+            DrawerNavigationItem(
+                title = "ESG, EIA & Solutions Hub",
+                subtitle = "20 Domains • Formulas • OTP Downloads",
+                icon = Icons.Default.Shield,
+                isSelected = currentTab == EdenTab.ESG_SOLUTIONS,
+                testTag = "sidebar_nav_esg_solutions",
+                onClick = {
+                    onSelectTab(EdenTab.ESG_SOLUTIONS)
                     onCloseDrawer()
                 }
             )
@@ -360,14 +393,26 @@ fun EdenSidebarDrawer(
                     .clip(RoundedCornerShape(8.dp))
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Statutory QA/QC Record System",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Sep 15, 2026",
+                            fontSize = 8.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     Text(
-                        text = "Statutory QA/QC Record System",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Field data sheets generated with cryptographic hash & ISO 17025 verification standards.",
+                        text = "Field data sheets & 20 ESG domains synchronized with ISO 17025 verification standards.",
                         fontSize = 9.sp,
                         lineHeight = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

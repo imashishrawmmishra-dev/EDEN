@@ -22,6 +22,7 @@ class AppUpdateManager(private val context: Context) {
 
     private val initialCurrentCode = prefs.getInt("installed_version_code", 1)
     private val initialCurrentName = prefs.getString("installed_version_name", "1.0.0") ?: "1.0.0"
+    private val initialLastUpdateTime = prefs.getString("installed_last_update_time", "Sep 15, 2026 • 10:55 PM") ?: "Sep 15, 2026 • 10:55 PM"
     private val latestCode = 2
     private val latestName = "1.1.0"
 
@@ -31,6 +32,7 @@ class AppUpdateManager(private val context: Context) {
             currentVersionName = initialCurrentName,
             latestVersionCode = latestCode,
             latestVersionName = latestName,
+            lastUpdateTime = initialLastUpdateTime,
             isUpdateAvailable = latestCode > initialCurrentCode,
             status = if (latestCode > initialCurrentCode) UpdateState.UPDATE_AVAILABLE else UpdateState.UP_TO_DATE,
             autoCheckEnabled = prefs.getBoolean("auto_check_enabled", true),
@@ -104,15 +106,22 @@ class AppUpdateManager(private val context: Context) {
             // Step 3: Successfully applied update
             val newCode = _updateInfo.value.latestVersionCode
             val newName = _updateInfo.value.latestVersionName
+            val updatedTimeString = try {
+                java.text.SimpleDateFormat("MMM dd, yyyy • hh:mm a", java.util.Locale.getDefault()).format(java.util.Date())
+            } catch (_: Exception) {
+                "Just now"
+            }
 
             prefs.edit()
                 .putInt("installed_version_code", newCode)
                 .putString("installed_version_name", newName)
+                .putString("installed_last_update_time", updatedTimeString)
                 .apply()
 
             _updateInfo.value = _updateInfo.value.copy(
                 currentVersionCode = newCode,
                 currentVersionName = newName,
+                lastUpdateTime = updatedTimeString,
                 isUpdateAvailable = false,
                 status = UpdateState.UP_TO_DATE,
                 downloadProgress = 1.0f

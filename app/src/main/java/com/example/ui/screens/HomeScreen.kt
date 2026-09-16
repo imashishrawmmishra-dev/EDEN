@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SystemUpdate
@@ -120,6 +121,84 @@ fun HomeScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Live Network Status & Last Update Strip
+        item {
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { viewModel.checkForAppUpdates(manual = true) }
+                    .testTag("home_last_update_status_strip")
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(9.dp)
+                                .background(Color(0xFF2E7D32), CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Last Update: ${appUpdateInfo.lastUpdateTime}",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = Color(0xFFE8F5E9)
+                                ) {
+                                    Text(
+                                        text = "LIVE",
+                                        fontSize = 8.5.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color(0xFF0F6E43),
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                    )
+                                }
+                            }
+                            Text(
+                                text = "Checked: ${appUpdateInfo.getFormattedLastCheck()} • v${appUpdateInfo.currentVersionName} (Build ${appUpdateInfo.currentVersionCode})",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .clickable { viewModel.checkForAppUpdates(manual = true) }
+                            .testTag("home_sync_check_btn")
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.CloudDone,
+                                contentDescription = "Check Latest Update",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(17.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // Customer Auto-Update Banner
         if (appUpdateInfo.isUpdateAvailable) {
             item {
@@ -174,7 +253,7 @@ fun HomeScreen(
                                 }
                             }
                             Text(
-                                text = "Automated sync for all customer devices • Tap to update",
+                                text = "Released: ${appUpdateInfo.releaseDate} • Last checked: ${appUpdateInfo.getFormattedLastCheck()}",
                                 fontSize = 11.sp,
                                 color = Color(0xFF5D4037)
                             )
@@ -754,6 +833,15 @@ fun HomeScreen(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 ToolNavCard(
+                    title = "ESG & Solutions Hub",
+                    subtitle = "20 Domains • OTP Toolkits",
+                    icon = Icons.Default.Shield,
+                    color = Color(0xFF1B5E20),
+                    onClick = { onNavigate(EdenTab.ESG_SOLUTIONS) },
+                    modifier = Modifier.weight(1f),
+                    testTag = "home_nav_esg_solutions"
+                )
+                ToolNavCard(
                     title = "Study & Research",
                     subtitle = "Open Standards & QMS",
                     icon = Icons.AutoMirrored.Filled.MenuBook,
@@ -761,15 +849,6 @@ fun HomeScreen(
                     onClick = { onNavigate(EdenTab.RESOURCES) },
                     modifier = Modifier.weight(1f),
                     testTag = "home_nav_resources"
-                )
-                ToolNavCard(
-                    title = "Ask EDEN AI",
-                    subtitle = if (forceOffline) "Offline Engine" else "Open AI Active",
-                    icon = Icons.Default.Psychology,
-                    color = if (forceOffline) Color(0xFFC25400) else Color(0xFF8E24AA),
-                    onClick = { onNavigate(EdenTab.ASK_EDEN) },
-                    modifier = Modifier.weight(1f),
-                    testTag = "home_nav_ai_secondary"
                 )
             }
         }

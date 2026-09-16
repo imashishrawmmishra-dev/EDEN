@@ -63,7 +63,8 @@ enum class EdenTab(val title: String) {
     DATA("Data & Sensors"),
     RESOURCES("Resources"),
     PROFILE("Profile"),
-    MONITORING_PROCEDURES("Procedures & FDS")
+    MONITORING_PROCEDURES("Procedures & FDS"),
+    ESG_SOLUTIONS("ESG & Solutions")
 }
 
 class EdenViewModel(application: Application) : AndroidViewModel(application) {
@@ -86,6 +87,10 @@ class EdenViewModel(application: Application) : AndroidViewModel(application) {
     fun navigateToProcedures(domain: MonitoringProcedureDomain = MonitoringProcedureDomain.AMBIENT) {
         _selectedProcedureDomain.value = domain
         selectTab(EdenTab.MONITORING_PROCEDURES)
+    }
+
+    fun navigateToEsgSolutions() {
+        selectTab(EdenTab.ESG_SOLUTIONS)
     }
 
     // --- User Authentication, Reward Points & Dialogs ---

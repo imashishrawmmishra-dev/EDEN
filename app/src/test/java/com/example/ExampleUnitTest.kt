@@ -215,5 +215,100 @@ class ExampleUnitTest {
         assertTrue(sectors.contains(com.example.data.model.JobSectorType.PUBLIC))
         assertTrue(sectors.contains(com.example.data.model.JobSectorType.PRIVATE))
     }
+
+    @Test
+    fun verifyAll20EsgSolutionsDomainsConfigured() {
+        val domains = com.example.solutions.model.EsgSolutionsRepository.domains
+        assertEquals(20, domains.size)
+
+        // Verify the 20 requested domain identifiers
+        val expectedDomainIds = listOf(
+            "esg_frameworks",
+            "csr_strategy",
+            "eia_ec_clearance",
+            "ghg_carbon_market",
+            "env_assessment_solutions",
+            "sustainability_finance",
+            "safety_supervisor_hse",
+            "impact_analyser_methodology",
+            "lab_skills_testing",
+            "ai_ml_environmental",
+            "climate_global_warming_science",
+            "policy_law_edd",
+            "who_research_health",
+            "un_research_projects",
+            "solid_waste_world",
+            "hazardous_waste_tech",
+            "solid_waste_global_society",
+            "sustainability_formulas_demand",
+            "numerical_modelling_env",
+            "underwater_noise_survey"
+        )
+
+        expectedDomainIds.forEach { id ->
+            val domain = domains.find { it.id == id }
+            assertNotNull("Domain '$id' must exist in repository", domain)
+            domain?.let {
+                assertTrue("Title must not be blank for ${it.id}", it.title.isNotBlank())
+                assertTrue("Requirement must not be blank for ${it.id}", it.requirement.isNotBlank())
+                assertTrue("Need must not be blank for ${it.id}", it.need.isNotBlank())
+                assertTrue("Purpose must not be blank for ${it.id}", it.purpose.isNotBlank())
+                assertTrue("Goal must not be blank for ${it.id}", it.goal.isNotBlank())
+                assertTrue("Scope must not be blank for ${it.id}", it.scope.isNotBlank())
+                assertTrue("Current Scenario must not be blank for ${it.id}", it.currentScenario.isNotBlank())
+                assertTrue("Future Outlook must not be blank for ${it.id}", it.futureOutlook.isNotBlank())
+                assertTrue("Necessity must not be blank for ${it.id}", it.necessity.isNotBlank())
+
+                // Verify 3 distinct audience guides exist
+                assertTrue(
+                    "Must have STUDENT guide for ${it.id}",
+                    it.audienceGuides.containsKey(com.example.solutions.model.AudienceType.STUDENTS)
+                )
+                assertTrue(
+                    "Must have PROFESSIONAL guide for ${it.id}",
+                    it.audienceGuides.containsKey(com.example.solutions.model.AudienceType.PROFESSIONALS)
+                )
+                assertTrue(
+                    "Must have RESEARCHER guide for ${it.id}",
+                    it.audienceGuides.containsKey(com.example.solutions.model.AudienceType.RESEARCHERS)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun verifyInteractiveSustainabilityFormulasCalculation() {
+        val formulas = com.example.solutions.model.EsgSolutionsRepository.formulas
+        assertTrue("Must have formulas configured", formulas.isNotEmpty())
+
+        formulas.forEach { formula ->
+            val result = formula.calculate(formula.param1Default, formula.param2Default, formula.param3Default)
+            assertFalse("Formula result must be valid finite number", result.isNaN() || result.isInfinite())
+            val interp = formula.interpretation(result)
+            assertTrue("Interpretation must not be blank", interp.isNotBlank())
+        }
+    }
+
+    @Test
+    fun verifyDownloadableResourcesAreOtpGated() {
+        val resources = com.example.solutions.model.EsgSolutionsRepository.downloadableResources
+        assertTrue("Must have downloadable resources", resources.isNotEmpty())
+
+        resources.forEach { resource ->
+            assertTrue("Resource must require OTP", resource.requiresOtp)
+            assertTrue("File extension must be TXT, CSV, or PY", resource.fileExtension in listOf("TXT", "CSV", "PY", "PDF", "XLSX"))
+            assertTrue("Estimated size must not be blank", resource.estimatedSize.isNotBlank())
+            assertTrue("Content generator must produce valid text", resource.contentGenerator().isNotBlank())
+        }
+    }
+
+    @Test
+    fun verifyAppUpdateInfoTimestampFormatting() {
+        val updateInfo = com.example.data.model.AppUpdateInfo()
+        assertTrue("Last update time must not be blank", updateInfo.lastUpdateTime.isNotBlank())
+        assertTrue("Release date must not be blank", updateInfo.releaseDate.isNotBlank())
+        assertTrue("Formatted last check must return a valid date string", updateInfo.getFormattedLastCheck().isNotBlank())
+        assertTrue("Last check timestamp must be positive", updateInfo.lastCheckedTimestamp > 0)
+    }
 }
 
